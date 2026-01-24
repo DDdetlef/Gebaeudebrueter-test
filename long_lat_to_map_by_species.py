@@ -39,15 +39,20 @@ popups = []
 colors = []
 url = 'http://www.gebaeudebrueter-in-berlin.de/index.php'
 
-query = ('SELECT gebaeudebrueter.web_id, bezirk, plz, ort, strasse, anhang, erstbeobachtung, beschreibung, besonderes,'
-         'mauersegler, kontrolle, sperling, ersatz, schwalbe, wichtig,'
-         'star, fledermaus, verloren, andere, longitude, latitude from gebaeudebrueter '
-         'LEFT JOIN geolocation_osm ON gebaeudebrueter.web_id = geolocation_osm.web_id')
+query = ("SELECT gebaeudebrueter.web_id, bezirk, plz, ort, strasse, anhang, erstbeobachtung, beschreibung, besonderes,"
+         "mauersegler, kontrolle, sperling, ersatz, schwalbe, wichtig,"
+         "star, fledermaus, verloren, andere, "
+         "geolocation_osm.longitude AS osm_longitude, geolocation_osm.latitude AS osm_latitude, "
+         "geolocation_google.longitude AS google_longitude, geolocation_google.latitude AS google_latitude "
+         "FROM gebaeudebrueter "
+         "LEFT JOIN geolocation_osm ON gebaeudebrueter.web_id = geolocation_osm.web_id "
+         "LEFT JOIN geolocation_google ON gebaeudebrueter.web_id = geolocation_google.web_id")
 cursor.execute(query)
 data = cursor.fetchall()
 for dataset in data:
     (web_id, bezirk, plz, ort, strasse, anhang, erstbeobachtung, beschreibung, besonderes, mauersegler,
-     kontrolle, sperling, ersatz, schwalbe, wichtig, star, fledermaus, verloren, andere, longitude, latitude) = dataset
+     kontrolle, sperling, ersatz, schwalbe, wichtig, star, fledermaus, verloren, andere,
+     osm_longitude, osm_latitude, google_longitude, google_latitude) = dataset
 
     if web_id == 1784:
         continue
@@ -78,10 +83,18 @@ for dataset in data:
     #     color = 'orange'
     #     fund = 'andere Art'
     #     grp = andere
+    # prefer OSM coords, fallback to Google coords; treat string 'None' as missing
+    latitude = None
+    longitude = None
+    if osm_latitude and str(osm_latitude) != 'None' and osm_longitude and str(osm_longitude) != 'None':
+        latitude = osm_latitude
+        longitude = osm_longitude
+    elif google_latitude and str(google_latitude) != 'None' and google_longitude and str(google_longitude) != 'None':
+        latitude = google_latitude
+        longitude = google_longitude
+
     icon = folium.Icon(color=color)
-    if latitude == 'None':
-        continue
-    if longitude == 'None':
+    if latitude is None or longitude is None:
         continue
 
     if ersatz:
