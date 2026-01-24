@@ -1,0 +1,5 @@
+select * from gebaeudebrueter LEFT JOIN geolocation_osm ON gebaeudebrueter.web_id = geolocation_osm.web_id where gebaeudebrueter.web_id = 1952
+# selects all columns where web_id=input
+
+WHERE longitude='None'
+# selects all longitude rows with "None"
