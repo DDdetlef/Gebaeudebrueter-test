@@ -2,3 +2,6 @@ api.key
 ReadmeIntern
 brueter.sqlite
 backups/
+# CSV reports and exports
+reports/
+*.csv
