@@ -1,48 +1,65 @@
-import geopandas as pd
-from geopy.extra.rate_limiter import RateLimiter
-from geopy.geocoders import Nominatim
+import sqlite3
 import folium
+from folium import plugins
 
-df = pd.read_file(
-    'C:\\Users\\Anita\\Documents\\NABU\\Gebaudebrueter\\Kontrolle_Onlineformular_2020_mit Kontrollnamen.csv')
+# Generate Meldungen map from database, prefer OSM coords then Google as fallback
+try:
+    conn = sqlite3.connect('brueter.sqlite')
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+except Exception as e:
+    raise
 
-locator = Nominatim(user_agent="myGeocode")
-#geocode = RateLimiter(locator.geocode, min_delay_seconds=1)
-longitude = [None] * df.shape[0]
-latitude = [None] * df.shape[0]
-for index, row in df.iterrows():
-    ort = str(row['Straße']) + ', ' + str(row['Bezirk']) + ', Berlin, Deutschland'
-    location = locator.geocode(ort)
-    if location is not None:
-        latitude[index] = location.latitude
-        longitude[index] = location.longitude
-    else:
-        latitude[index] = "52.4739285"
-        longitude[index] = "13.4553784"
+map1 = folium.Map(location=[52.5163,13.3777], tiles='cartodbpositron', zoom_start=12)
 
-df['long'] = longitude
-df['lat'] = latitude
+marker_cluster = plugins.MarkerCluster()
+map1.add_child(marker_cluster)
 
-map1 = folium.Map(
-    location=[52.5163,13.3777],
-    tiles='cartodbpositron',
-    zoom_start=12,
-)
+query = ("SELECT b.web_id, b.bezirk, b.plz, b.ort, b.strasse, b.anhang, b.erstbeobachtung, b.beschreibung, b.besonderes, "
+         "o.latitude AS osm_latitude, o.longitude AS osm_longitude, gg.latitude AS google_latitude, gg.longitude AS google_longitude "
+         "FROM gebaeudebrueter b "
+         "LEFT JOIN geolocation_osm o ON b.web_id = o.web_id "
+         "LEFT JOIN geolocation_google gg ON b.web_id = gg.web_id")
 
-df.apply(lambda row:folium.Marker(location=[row["lat"], row["long"]],
-                                  popup= folium.Popup('<b>Adresse</b><br/>' + str(row['Straße']) + ', ' + str(row['Bezirk']) +
-                                         '<br/><br/><b>Meldung</b><br/>' + row['Meldung'] +
-                                         '<br/><br/><b>Datum der Meldung</b><br/>' + row['Datum der Meldung'] +
-                                         '<br/><br/><b>Bemerkung</b><br/>' + row['Bemerkung'] +
-                                         '<br/><br/><b>Melder</b><br/>' + row['Melder'] +
-                                         '<br/><br/><b>Melderangaben</b><br/>' + row['Melderangaben'] +
-                                         '<br/><br/><b>Kontrollangaben</b><br/>' + row['Kontrollangaben'] +
-                                         '<br/><br/><b>Kontrollperson</b><br/>' + row['Kontrollperson']
-                                                     ,max_width=450 ) ,
-                                  tooltip='Details').add_to(map1), axis=1)
+cur.execute(query)
+rows = cur.fetchall()
+url = 'http://www.gebaeudebrueter-in-berlin.de/index.php'
+count = 0
+for r in rows:
+    web_id = r['web_id']
+    if web_id == 1784:
+        continue
+    # prefer osm, fallback to google
+    lat = None
+    lon = None
+    if r['osm_latitude'] is not None and str(r['osm_latitude']) != 'None':
+        lat = r['osm_latitude']
+        lon = r['osm_longitude']
+    elif r['google_latitude'] is not None and str(r['google_latitude']) != 'None':
+        lat = r['google_latitude']
+        lon = r['google_longitude']
+    if lat is None or lon is None:
+        continue
+    try:
+        latf = float(lat)
+        lonf = float(lon)
+    except Exception:
+        continue
 
+    popup_html = (
+        f"<b>Adresse</b><br/>{r['strasse']}, {r['plz']} {r['ort']}"
+        f"<br/><br/><b>Erstbeobachtung</b><br/>{(str(r['erstbeobachtung']) if r['erstbeobachtung'] else 'unbekannt')}"
+        f"<br/><br/><b>Beschreibung</b><br/>{(r['beschreibung'] or '')}"
+        f"<br/><br/><b>Besonderes</b><br/>{(r['besonderes'] or '')}"
+        f"<br/><br/><b>Link zur Datenbank</b><br/><a href={url}?ID={web_id}>{web_id}</a>"
+    )
 
+    folium.Marker(location=[latf, lonf], popup=folium.Popup(popup_html, max_width=450)).add_to(marker_cluster)
+    count += 1
+
+map1.get_root().html.add_child(folium.Element('<div style="position: fixed; bottom: 0; left: 0; background: white; padding: 4px; z-index:9999">Markers: ' + str(count) + '</div>'))
 map1.save('GebaeudebrueterMeldungen.html')
+conn.close()
 
 
 # print("Latitude = {}, Longitude = {}".format(dflatitude, location.longitude))
