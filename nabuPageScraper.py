@@ -123,7 +123,8 @@ def order_id(ahref):
 #####  RUN MODE ######
 ######################
 
-only_get_new_ids = False
+# Only fetch only new IDs (do not re-fetch all entries)
+only_get_new_ids = True
 # False: gets all data
 # True: only updates new data starting from the last known largest web id
 
