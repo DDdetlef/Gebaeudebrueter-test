@@ -83,3 +83,10 @@ Kurze Anleitung zum Testlauf in Actions
 1) Push das Repo (ohne `api.key` in commits).
 2) In GitHub: Settings → Secrets → Actions → New repository secret → `GOOGLE_API_KEY` setzen.
 3) In GitHub → Actions → Geocode → Run workflow (workflow_dispatch) auswählen.
+
+Flags in der Datenbank
+- `is_test` (INTEGER, default 0): Kennzeichnet Test‑/Beispieldatensätze; diese werden von den Map‑Generatoren ausgeschlossen.
+- `noSpecies` (INTEGER, default 0): Wenn gesetzt, bedeutet das, dass kein konkretes Ziel‑`species` zugeordnet ist — solche Einträge werden bewusst nicht auf den öffentlichen Karten dargestellt.
+
+Einrichtung
+- Ein Migrationsskript `scripts/add_db_flags.py` legt die beiden Spalten an (falls noch nicht vorhanden) und markiert `web_id=1784` als `is_test=1`.

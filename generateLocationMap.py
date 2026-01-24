@@ -19,7 +19,8 @@ query = ("SELECT b.web_id, b.bezirk, b.plz, b.ort, b.strasse, b.anhang, b.erstbe
          "o.latitude AS osm_latitude, o.longitude AS osm_longitude, gg.latitude AS google_latitude, gg.longitude AS google_longitude "
          "FROM gebaeudebrueter b "
          "LEFT JOIN geolocation_osm o ON b.web_id = o.web_id "
-         "LEFT JOIN geolocation_google gg ON b.web_id = gg.web_id")
+         "LEFT JOIN geolocation_google gg ON b.web_id = gg.web_id "
+         "WHERE (b.is_test IS NULL OR b.is_test=0) AND (b.noSpecies IS NULL OR b.noSpecies=0)")
 
 cur.execute(query)
 rows = cur.fetchall()
@@ -27,8 +28,7 @@ url = 'http://www.gebaeudebrueter-in-berlin.de/index.php'
 count = 0
 for r in rows:
     web_id = r['web_id']
-    if web_id == 1784:
-        continue
+    # test rows are excluded via the SQL WHERE clause (is_test)
     # prefer osm, fallback to google
     lat = None
     lon = None

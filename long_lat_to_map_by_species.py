@@ -46,7 +46,8 @@ query = ("SELECT gebaeudebrueter.web_id, bezirk, plz, ort, strasse, anhang, erst
          "geolocation_google.longitude AS google_longitude, geolocation_google.latitude AS google_latitude "
          "FROM gebaeudebrueter "
          "LEFT JOIN geolocation_osm ON gebaeudebrueter.web_id = geolocation_osm.web_id "
-         "LEFT JOIN geolocation_google ON gebaeudebrueter.web_id = geolocation_google.web_id")
+         "LEFT JOIN geolocation_google ON gebaeudebrueter.web_id = geolocation_google.web_id "
+         "WHERE (gebaeudebrueter.is_test IS NULL OR gebaeudebrueter.is_test=0) AND (gebaeudebrueter.noSpecies IS NULL OR gebaeudebrueter.noSpecies=0)")
 cursor.execute(query)
 data = cursor.fetchall()
 for dataset in data:
@@ -54,8 +55,8 @@ for dataset in data:
      kontrolle, sperling, ersatz, schwalbe, wichtig, star, fledermaus, verloren, andere,
      osm_longitude, osm_latitude, google_longitude, google_latitude) = dataset
 
-    if web_id == 1784:
-        continue
+    # skip test rows flagged in DB
+    # web_id 1784 should be marked via `is_test` by the migration script
     color = 'orange'
     fund = 'andere Art'
     grp = andere_grp
