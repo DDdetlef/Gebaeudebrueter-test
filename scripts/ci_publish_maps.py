@@ -22,7 +22,7 @@ if not db.exists():
 shutil.copy(db, tmp / 'brueter.sqlite')
 
 py = sys.executable
-scripts = [repo / 'long_lat_to_map_by_species.py', repo / 'generateLocationMap.py']
+scripts = [repo / 'scripts' / 'long_lat_to_map_by_species.py', repo / 'scripts' / 'generateLocationMap.py']
 for s in scripts:
     print('Running', s)
     res = subprocess.run([py, str(s)], cwd=str(tmp))

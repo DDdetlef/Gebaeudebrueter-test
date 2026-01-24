@@ -34,22 +34,22 @@ Empfohlene Ausführungsreihenfolge
    - Option: in `nabuPageScraper.py` die Variable `only_get_new_ids` setzen (True = nur neue IDs seit letzter max(web_id)).
 
 ```powershell
-python nabuPageScraper.py
+python scripts/nabuPageScraper.py
 ```
 
 2) `generateLocationForPageMap.py` – geokodiert Einträge mit `new=1` (benötigt `api.key`) und schreibt in
    `geolocation_osm` und `geolocation_google`.
 
 ```powershell
-python generateLocationForPageMap.py
+python scripts/generateLocationForPageMap.py
 ```
 
 3) `long_lat_to_map_by_species.py` oder `generateLocationMap.py` – erzeugt die HTML‑Karten.
 
 ```powershell
-python long_lat_to_map_by_species.py
+python scripts/long_lat_to_map_by_species.py
 # oder
-python generateLocationMap.py
+python scripts/generateLocationMap.py
 ```
 
 Hilfs‑Skripte
