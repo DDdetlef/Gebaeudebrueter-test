@@ -5,6 +5,8 @@ Dieses Repository zieht Meldungen von der Website www.gebaeudebrueter-in-berlin.
 einer lokalen SQLite‑Datenbank (`brueter.sqlite`), ermittelt GPS‑Koordinaten (OpenStreetMap & Google Maps)
 und erzeugt interaktive Karten (HTML) sowie einfache Statistiken/Analysen.
 
+Kartendarstellung: https://dddetlef.github.io/Gebaeudebrueter-test/
+
 Wichtige Dateien
 - `nabuPageScraper.py` : Scraper, der Einträge parst und in `gebaeudebrueter` speichert.
 - `initializeDB.sql`  : Schema für `gebaeudebrueter`, `geolocation_google`, `geolocation_osm`.
