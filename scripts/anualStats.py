@@ -8,7 +8,7 @@ try:
 except sqlite3.Error as error:
     print("Error while connecting to sqlite", error)
 
-cursor.execute('select strftime('\''%Y\'',erstbeobachtung) as year,count(*) from gebaeudebrueter group by cast(strftime('\''%Y\'',erstbeobachtung) as decimal)')
+cursor.execute("select strftime('%Y',erstbeobachtung) as year,count(*) from gebaeudebrueter group by cast(strftime('%Y',erstbeobachtung) as decimal)")
 data = cursor.fetchall()
 
 dates = []
@@ -39,17 +39,17 @@ plt.ylabel('kummulierte Erstbeobachtungen')
 plt.savefig('erstbeobachtungKummuliertJahr.png',dpi=150)
 plt.close()
 
-cursor.execute('select strftime('\''%Y\'',erstbeobachtung) as year,count(*) from gebaeudebrueter where mauersegler = 1 group by cast(strftime('\''%Y\'',erstbeobachtung) as decimal)')
+cursor.execute("select strftime('%Y',erstbeobachtung) as year,count(*) from gebaeudebrueter where mauersegler = 1 group by cast(strftime('%Y',erstbeobachtung) as decimal)")
 data_mauersegler = cursor.fetchall()
-cursor.execute('select strftime('\''%Y\'',erstbeobachtung) as year,count(*) from gebaeudebrueter where sperling = 1 group by cast(strftime('\''%Y\'',erstbeobachtung) as decimal)')
+cursor.execute("select strftime('%Y',erstbeobachtung) as year,count(*) from gebaeudebrueter where sperling = 1 group by cast(strftime('%Y',erstbeobachtung) as decimal)")
 data_sperling = cursor.fetchall()
-cursor.execute('select strftime('\''%Y\'',erstbeobachtung) as year,count(*) from gebaeudebrueter where schwalbe = 1 group by cast(strftime('\''%Y\'',erstbeobachtung) as decimal)')
+cursor.execute("select strftime('%Y',erstbeobachtung) as year,count(*) from gebaeudebrueter where schwalbe = 1 group by cast(strftime('%Y',erstbeobachtung) as decimal)")
 data_schwalbe = cursor.fetchall()
-cursor.execute('select strftime('\''%Y\'',erstbeobachtung) as year,count(*) from gebaeudebrueter where star = 1 group by cast(strftime('\''%Y\'',erstbeobachtung) as decimal)')
+cursor.execute("select strftime('%Y',erstbeobachtung) as year,count(*) from gebaeudebrueter where star = 1 group by cast(strftime('%Y',erstbeobachtung) as decimal)")
 data_star = cursor.fetchall()
-cursor.execute('select strftime('\''%Y\'',erstbeobachtung) as year,count(*) from gebaeudebrueter where fledermaus = 1 group by cast(strftime('\''%Y\'',erstbeobachtung) as decimal)')
+cursor.execute("select strftime('%Y',erstbeobachtung) as year,count(*) from gebaeudebrueter where fledermaus = 1 group by cast(strftime('%Y',erstbeobachtung) as decimal)")
 data_fledermaus = cursor.fetchall()
-cursor.execute('select strftime('\''%Y\'',erstbeobachtung) as year,count(*) from gebaeudebrueter where andere = 1 group by cast(strftime('\''%Y\'',erstbeobachtung) as decimal)')
+cursor.execute("select strftime('%Y',erstbeobachtung) as year,count(*) from gebaeudebrueter where andere = 1 group by cast(strftime('%Y',erstbeobachtung) as decimal)")
 data_andere = cursor.fetchall()
 
 label_default = list(range(min(dates),max(dates)+1))
