@@ -109,12 +109,9 @@ for dataset in data:
     except:
         erstbeobachtung_text = 'unbekannt'
 
-    besonderes_text  = '<br/><br/><b>Besonderes</b><br/>' + besonderes if besonderes else ''
-
     popup = folium.Popup('<b>Fund: </b>' + fund + '<br/><br/><b>Adresse</b><br/>' + str(strasse) + ', ' + str(plz) + ' ' + str(ort) +
                          '<br/><br/><b>Erstbeobachtung: </b>' + erstbeobachtung_text +
                          '<br/><br/><b>Beschreibung</b><br/>' + beschreibung +
-                         besonderes_text +
                          ersatz_text +
                          '<br/><br/><b>Link zur Datenbank</b><br/><a href=' + url + '?ID=' + str(web_id) + '>' + str(web_id) + '</a>'
                          , max_width=450)

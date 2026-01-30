@@ -50,7 +50,6 @@ for r in rows:
         f"<b>Adresse</b><br/>{r['strasse']}, {r['plz']} {r['ort']}"
         f"<br/><br/><b>Erstbeobachtung</b><br/>{(str(r['erstbeobachtung']) if r['erstbeobachtung'] else 'unbekannt')}"
         f"<br/><br/><b>Beschreibung</b><br/>{(r['beschreibung'] or '')}"
-        f"<br/><br/><b>Besonderes</b><br/>{(r['besonderes'] or '')}"
         f"<br/><br/><b>Link zur Datenbank</b><br/><a href={url}?ID={web_id}>{web_id}</a>"
     )
 
