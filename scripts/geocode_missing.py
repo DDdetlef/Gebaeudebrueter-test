@@ -1,6 +1,7 @@
 import os
 import csv
 import time
+import re
 import requests
 from geopy.geocoders import Nominatim
 from urllib.parse import urlencode
@@ -13,6 +14,27 @@ if not GOOGLE_KEY and os.path.exists('api.key'):
         GOOGLE_KEY = f.read().strip()
 
 geolocator = Nominatim(user_agent='gebauedebrueter_geocoder')
+
+
+def _normalize_ws(s: str) -> str:
+    return re.sub(r"\s+", " ", s or "").strip()
+
+
+def sanitize_street(s: str) -> str:
+    s = _normalize_ws(s)
+    s = re.sub(r"\([^)]*\)", "", s).strip()
+    parts = re.split(r"[;/|]", s)
+    pick = None
+    for p in parts:
+        p2 = _normalize_ws(p)
+        if re.search(r"\d", p2):
+            pick = p2
+            break
+    if pick is None and parts:
+        pick = _normalize_ws(parts[0])
+    s = pick or ''
+    s = s.split(',')[0].strip()
+    return s
 
 results = []
 
@@ -28,11 +50,12 @@ none = 0
 
 for r in rows:
     web_id = r.get('web_id')
-    strasse = (r.get('strasse') or '').strip()
+    strasse = sanitize_street(r.get('strasse') or '')
     plz = (r.get('plz') or '').strip()
     ort = r.get('ort') or 'Berlin'
     # build address
-    addr = ', '.join([p for p in [strasse, plz, 'Berlin', 'Germany'] if p])
+    addr_parts = [strasse, plz, 'Berlin', 'Germany']
+    addr = ', '.join([p for p in addr_parts if p])
     found = False
     provider = ''
     lat = ''

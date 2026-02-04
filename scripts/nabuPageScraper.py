@@ -69,6 +69,34 @@ def sanitize_date(date_text):
     return date
 
 
+def _normalize_ws(s: str) -> str:
+    # collapse whitespace and strip
+    return re.sub(r"\s+", " ", s or "").strip()
+
+
+def sanitize_street(s: str) -> str:
+    # remove control chars
+    s = ''.join(ch for ch in (s or '') if unicodedata.category(ch)[0] != "C")
+    s = _normalize_ws(s)
+    # remove parenthetical notes
+    s = re.sub(r"\([^)]*\)", "", s).strip()
+    # split by common non-address separators and take the first meaningful part
+    parts = re.split(r"[;/|]", s)
+    # choose segment with a house number if present, else the first segment
+    pick = None
+    for p in parts:
+        p2 = _normalize_ws(p)
+        if re.search(r"\d", p2):
+            pick = p2
+            break
+    if pick is None and parts:
+        pick = _normalize_ws(parts[0])
+    s = pick or ''
+    # remove trailing commas or extra descriptors after comma
+    s = s.split(',')[0].strip()
+    return s
+
+
 def get_data(web_id):
     stripped = lambda s: ''.join(ch for ch in s if unicodedata.category(ch)[0] != "C")
     detailContent = urlopen(url + '?ID=' + str(web_id)).read()
@@ -88,7 +116,7 @@ def get_data(web_id):
     schwalbe = 1 if td[10].findChildren('input', checked=True) else 0
     wichtig = 1 if td[11].findChildren('input', checked=True) else 0
     strasse = td[13].findChildren('input')[0]['value']
-    strasse = stripped(str(strasse))
+    strasse = sanitize_street(str(strasse))
     star = 1 if td[14].findChildren('input', checked=True) else 0
     sanierung = 1 if td[15].findChildren('input', checked=True) else 0
     anhang = td[17].findChildren('input')[0]['value']
