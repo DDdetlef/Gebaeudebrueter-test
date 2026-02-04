@@ -26,6 +26,7 @@ schwalbe_grp = folium.plugins.FeatureGroupSubGroup(marker_cluster, 'Schwalbe')
 fledermaus_grp = folium.plugins.FeatureGroupSubGroup(marker_cluster, 'Fledermaus')
 star_grp = folium.plugins.FeatureGroupSubGroup(marker_cluster, 'Star')
 andere_grp = folium.plugins.FeatureGroupSubGroup(marker_cluster, 'Andere')
+multi_grp = folium.plugins.FeatureGroupSubGroup(marker_cluster, 'Mehrere Arten')
 
 map1.add_child(mauersegler_grp)
 map1.add_child(sperling_grp)
@@ -33,6 +34,7 @@ map1.add_child(schwalbe_grp)
 map1.add_child(fledermaus_grp)
 map1.add_child(star_grp)
 map1.add_child(andere_grp)
+map1.add_child(multi_grp)
 
 positions = []
 popups = []
@@ -57,33 +59,54 @@ for dataset in data:
 
     # skip test rows flagged in DB
     # web_id 1784 should be marked via `is_test` by the migration script
+    # classify species per row: single vs multi; include 'Andere' when flagged
+    species_flags = {
+        'Mauersegler': bool(mauersegler),
+        'Sperling': bool(sperling),
+        'Schwalbe': bool(schwalbe),
+        'Fledermaus': bool(fledermaus),
+        'Star': bool(star),
+        'Andere': bool(andere)
+    }
+    species_list = [name for name, flag in species_flags.items() if flag]
+
+    color_map = {
+        'Mauersegler': 'blue',
+        'Sperling': 'green',
+        'Schwalbe': 'purple',
+        'Fledermaus': 'black',
+        'Star': 'darkred',
+        'Andere': 'orange'
+    }
+
+    # defaults
+    grp = andere_grp
     color = 'orange'
     fund = 'andere Art'
-    grp = andere_grp
-    if mauersegler:
-        color='blue'
-        fund = 'Mauersegler'
-        grp = mauersegler_grp
-    if sperling:
-        color='green'
-        fund = 'Sperling'
-        grp = sperling_grp
-    if schwalbe:
-        color='purple'
-        fund = 'Schwalbe'
-        grp = schwalbe_grp
-    if fledermaus:
-        color = 'black'
-        fund = 'Fledermaus'
-        grp = fledermaus_grp
-    if star:
-        color = 'darkred'
-        fund = 'Star'
-        grp = star_grp
-    # if row['Andere']:
-    #     color = 'orange'
-    #     fund = 'andere Art'
-    #     grp = andere
+    tooltip_text = fund
+
+    if len(species_list) == 1:
+        species = species_list[0]
+        fund = species
+        tooltip_text = species
+        color = color_map.get(species, 'orange')
+        if species == 'Mauersegler':
+            grp = mauersegler_grp
+        elif species == 'Sperling':
+            grp = sperling_grp
+        elif species == 'Schwalbe':
+            grp = schwalbe_grp
+        elif species == 'Fledermaus':
+            grp = fledermaus_grp
+        elif species == 'Star':
+            grp = star_grp
+        else:
+            grp = andere_grp
+    elif len(species_list) > 1:
+        fund = ', '.join(species_list)
+        tooltip_text = 'Mehrere Arten'
+        color = 'cadetblue'
+        grp = multi_grp
     # prefer OSM coords, fallback to Google coords; treat string 'None' as missing
     latitude = None
     longitude = None
@@ -116,7 +139,7 @@ for dataset in data:
                          '<br/><br/><b>Link zur Datenbank</b><br/><a href=' + url + '?ID=' + str(web_id) + '>' + str(web_id) + '</a>'
                          , max_width=450)
     try:
-        folium.Marker(location=[latitude, longitude], popup=popup, tooltip=fund, icon=icon).add_to(grp)
+        folium.Marker(location=[latitude, longitude], popup=popup, tooltip=tooltip_text, icon=icon).add_to(grp)
     except:
         print('bla')
 
