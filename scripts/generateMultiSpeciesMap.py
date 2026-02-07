@@ -192,8 +192,8 @@ def main():
     .ms-modal-content { background: #fff; padding: 18px 22px; border-radius:10px; max-width:720px; width:calc(100% - 40px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); position:relative; }
     .ms-modal-close { position:absolute; top:8px; right:8px; border:none; background:transparent; font-size:18px; cursor:pointer; }
     .ms-modal-body { font-size:14px; line-height:1.6; }
-    .ms-modal-header { display:flex; align-items:center; gap:14px; margin-bottom:10px; }
-    .ms-modal-logo { flex:0 0 auto; max-height:64px; border-radius:4px; }
+    .ms-modal-header { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; margin-bottom:10px; }
+    .ms-modal-logo { flex:0 0 auto; max-height:56px; width:auto; border-radius:4px; margin-left:12px; }
     .ms-modal-title { margin:0; font-size:18px; font-weight:700; }
     .ms-modal-section-title { margin:12px 0 4px 0; font-size:15px; font-weight:700; }
     .ms-modal-body ol { padding-left:20px; margin:6px 0 0 0; }
@@ -231,8 +231,8 @@ def main():
         <button id="ms-info-close" class="ms-modal-close" aria-label="Schließen">✕</button>
         <div class="ms-modal-body">
           <div class="ms-modal-header">
-            <img src="../images/Logo%20BezGr%20SteglitzTempelhof%20farb%20(1).jpg" alt="Logo Gebäudebrüterschutz NABU Bezirksgruppe Steglitz-Zehlendorf" class="ms-modal-logo" />
             <h2 class="ms-modal-title">Karte der Gebäudebrüter in Berlin</h2>
+            <img src="../images/Logo%20BezGr%20SteglitzTempelhof%20farb%20(1).jpg" alt="Logo Gebäudebrüterschutz NABU Bezirksgruppe Steglitz-Zehlendorf" class="ms-modal-logo" />
           </div>
           <p>Diese Karte zeigt Standorte von Gebäudebrütern in Berlin an. Die Daten stammen aus der Online-Datenbank des Projekts Gebäudebrüterschutz der NABU Bezirksgruppe Steglitz-Zehlendorf (<a href="http://www.gebaeudebrueter-in-berlin.de/index.php" target="_blank" rel="noopener">www.gebaeudebrueter-in-berlin.de</a>).</p>
           <h3 class="ms-modal-section-title">Wie funktioniert&#39;s?</h3>
