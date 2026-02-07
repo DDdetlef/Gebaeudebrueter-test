@@ -170,25 +170,26 @@ controls_html = '''
               <li>Klicken Sie auf einen Standort-Marker, um weitere Informationen zu den dort erfassten Arten und Maßnahmen zu erhalten.</li>
             </ol>
           </div>
-          <!-- Submit modal (triggered from control button) -->
-          <div id="ms-submit-modal" class="ms-modal" style="display:none;">
-            <div class="ms-modal-content">
-              <button id="ms-submit-close" class="ms-modal-close" aria-label="Schließen">✕</button>
-              <div class="ms-modal-body">
-                <div class="ms-modal-text">
-                  <p><strong>Kennen Sie einen Nistplatz von Spatz, Schwalbe &amp; Co?</strong></p>
-                  <p>Dann freuen wir uns über Ihre Meldung! Je mehr Daten wir haben, desto besser können wir die Gebäudebrüter in Berlin schützen.</p>
-                  <div style="margin-top:12px; display:flex; gap:8px;">
-                    <a id="ms-submit-continue" href="https://berlin.nabu.de/wir-ueber-uns/bezirksgruppen/steglitz-zehlendorf/projekte/gebaeudebrueter/12400.html" target="_blank" rel="noopener" class="ms-submit-cta">Weiter zum Online-Formular</a>
-                    <button id="ms-submit-cancel" class="ms-submit-btn">Schließen</button>
-                  </div>
-                </div>
-              </div>
+          
+        </div>
+      </div>
+    </div>
+    </div>
+    <!-- Submit modal (triggered from control button) -->
+    <div id="ms-submit-modal" class="ms-modal" style="display:none;">
+      <div class="ms-modal-content">
+        <button id="ms-submit-close" class="ms-modal-close" aria-label="Schließen">✕</button>
+        <div class="ms-modal-body">
+          <div class="ms-modal-text">
+            <p><strong>Kennen Sie einen Nistplatz von Spatz, Schwalbe &amp; Co?</strong></p>
+            <p>Dann freuen wir uns über Ihre Meldung! Je mehr Daten wir haben, desto besser können wir die Gebäudebrüter in Berlin schützen.</p>
+            <div style="margin-top:12px; display:flex; gap:8px;">
+              <a id="ms-submit-continue" href="https://berlin.nabu.de/wir-ueber-uns/bezirksgruppen/steglitz-zehlendorf/projekte/gebaeudebrueter/12400.html" target="_blank" rel="noopener" class="ms-submit-cta">Weiter zum Online-Formular</a>
+              <button id="ms-submit-cancel" class="ms-submit-btn">Schließen</button>
             </div>
           </div>
         </div>
       </div>
-    </div>
     </div>
     <script>
     (function(){
