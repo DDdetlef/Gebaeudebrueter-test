@@ -60,8 +60,15 @@ controls_html = '''
     .ms-sheet-actions { padding:12px 16px; border-top:1px solid #eee; display:flex; justify-content:flex-end; }
     .ms-sheet-actions button { padding:8px 12px; border-radius:6px; border:1px solid #1976d2; background:#1976d2; color:white; cursor:pointer; }
     .ms-control h4 { margin: 0 0 6px 0; font-size: 13px; }
-    .ms-row { display:flex; gap:8px; align-items:center; margin: 6px 0; flex-wrap:wrap; }
-    .ms-row label { font-size: 12px; }
+    .ms-section { background:#f7f7f7; border-radius:8px; padding:8px 10px; margin-top:8px; }
+    .ms-row { display:flex; flex-wrap:wrap; gap:8px; align-items:flex-start; margin: 6px 0; }
+    .ms-row label { font-size: 12px; line-height:1.5; display:flex; align-items:center; flex:0 0 calc(50% - 8px); box-sizing:border-box; }
+    .ms-all-toggle { display:flex; align-items:center; gap:8px; flex:0 0 100%; margin-bottom:4px; }
+    .ms-all-toggle input[type=checkbox] { position:absolute; opacity:0; width:0; height:0; }
+    .ms-all-track { width:32px; height:16px; border-radius:999px; background:#ccc; position:relative; flex-shrink:0; transition: background .15s ease; }
+    .ms-all-thumb { position:absolute; top:2px; left:2px; width:12px; height:12px; border-radius:50%; background:#fff; box-shadow:0 0 2px rgba(0,0,0,0.4); transition: transform .15s ease; }
+    .ms-all-toggle input[type=checkbox]:checked + .ms-all-track { background:#1976d2; }
+    .ms-all-toggle input[type=checkbox]:checked + .ms-all-track .ms-all-thumb { transform: translateX(16px); }
     .ms-badge { display: none; }
     .ms-hidden { display: none !important; }
     .leaflet-marker-icon.ms-div-icon {
@@ -91,14 +98,18 @@ controls_html = '''
           <button id="ms-open-sheet" class="ms-open-sheet-btn" title="Filter öffnen">Filter</button>
         </div>
       </div>
-      <div class="ms-row"><div id="ms-more-info-toggle" class="ms-toggle" title="Mehr Informationen anzeigen"><span class="arrow">►</span><span>Mehr Infos / Hilfe</span></div></div>
+      <div class="ms-row"><div id="ms-more-info-toggle" class="ms-toggle" title="Mehr Informationen anzeigen"><span class="arrow">►</span><span>ⓘ ?</span></div></div>
       <div class="desktop-only">
-        <h4>Filter Arten</h4>
-        <div class="ms-row" id="ms-species-row"></div>
-        <h4>Filter Status</h4>
-        <div class="ms-row" id="ms-status-row"></div>
+        <div class="ms-section">
+          <h4>Filter Arten</h4>
+          <div class="ms-row" id="ms-species-row"></div>
+        </div>
+        <div class="ms-section">
+          <h4>Filter Status</h4>
+          <div class="ms-row" id="ms-status-row"></div>
+        </div>
         <div class="ms-row ms-reset-wrap">
-          <button id="ms-reset" title="Alle Marker zeigen">Reset</button>
+          <button id="ms-reset" title="Alle Marker zeigen">⟲ Filter zurücksetzen</button>
         </div>
       </div>
     </div>
@@ -268,7 +279,25 @@ controls_html = '''
         sRow.innerHTML = ''; sAccordion.innerHTML = '';
         stRow.innerHTML = ''; stAccordion.innerHTML = '';
         // 'Alle' for species
-        function makeAllCheckbox(id){ var wrap = document.createElement('label'); wrap.style.display='flex'; wrap.style.alignItems='center'; var cb = document.createElement('input'); cb.type='checkbox'; cb.id = id; cb.checked=true; wrap.appendChild(cb); wrap.appendChild(document.createTextNode(' Alle')); return {wrap:wrap, input:cb}; }
+        function makeAllCheckbox(id){
+          var wrap = document.createElement('label');
+          wrap.className = 'ms-all-toggle';
+          var cb = document.createElement('input');
+          cb.type = 'checkbox';
+          cb.id = id;
+          cb.checked = true;
+          var track = document.createElement('span');
+          track.className = 'ms-all-track';
+          var thumb = document.createElement('span');
+          thumb.className = 'ms-all-thumb';
+          track.appendChild(thumb);
+          var text = document.createElement('span');
+          text.textContent = 'Alle';
+          wrap.appendChild(cb);
+          wrap.appendChild(track);
+          wrap.appendChild(text);
+          return {wrap: wrap, input: cb};
+        }
         var sAllDesktop = makeAllCheckbox('ms-species-all'); sRow.appendChild(sAllDesktop.wrap);
         var sAllSheet = makeAllCheckbox('ms-species-all-sheet'); sAccordion.appendChild(sAllSheet.wrap);
         Object.keys(SPECIES_COLORS_JS).forEach(function(name){
