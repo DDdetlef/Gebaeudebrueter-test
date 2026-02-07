@@ -213,8 +213,16 @@ controls_html = '''
         var togSheet = document.getElementById('ms-more-info-toggle-sheet');
         var modal = document.getElementById('ms-info-modal');
         var closeBtn = document.getElementById('ms-info-close');
-        function openModal(ev){ if(ev){ ev.preventDefault(); } if(modal){ modal.style.display = 'flex'; } }
-        function closeModal(){ if(modal){ modal.style.display = 'none'; } }
+        var sheet = document.getElementById('ms-bottom-sheet');
+        function openModal(ev){
+          if(ev){ ev.preventDefault(); }
+          if(sheet){ sheet.classList.remove('open'); }
+          if(modal){ modal.style.display = 'flex'; }
+        }
+        function closeModal(){
+          if(modal){ modal.style.display = 'none'; }
+          if(sheet){ sheet.classList.remove('open'); }
+        }
         if(togDesktop){ togDesktop.addEventListener('click', openModal); }
         if(togSheet){ togSheet.addEventListener('click', openModal); }
         if(closeBtn){ closeBtn.addEventListener('click', closeModal); }
