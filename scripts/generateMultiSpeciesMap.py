@@ -67,16 +67,16 @@ def species_list_from_row(row):
 def conic_gradient_for_species(species):
   # Up to 4 segments; equal-sized
   if not species:
-    return "background: transparent;"
-    n = min(len(species), 4)
-    seg_angle = 360 / n
-    stops = []
-    for i, sp in enumerate(species[:n]):
-        start = round(i * seg_angle, 2)
-        end = round((i + 1) * seg_angle, 2)
-        color = SPECIES_COLORS.get(sp, '#9e9e9e')
-        stops.append(f"{color} {start}deg {end}deg")
-    return f"background: conic-gradient({', '.join(stops)});"
+    return "background: #cccccc;"
+  n = min(len(species), 4)
+  seg_angle = 360 / n
+  stops = []
+  for i, sp in enumerate(species[:n]):
+      start = round(i * seg_angle, 2)
+      end = round((i + 1) * seg_angle, 2)
+      color = SPECIES_COLORS.get(sp, '#9e9e9e')
+      stops.append(f"{color} {start}deg {end}deg")
+  return f"background: conic-gradient({', '.join(stops)});"
 
 
 def build_divicon_html(species, status_key, all_statuses, address_text):
