@@ -49,6 +49,11 @@ controls_html = '''
     .ms-modal { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.45); z-index:10000; display:flex; align-items:center; justify-content:center; }
     .ms-modal-content { background: #fff; padding: 18px 22px; border-radius:10px; max-width:700px; width:calc(100% - 40px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); position:relative; }
     .ms-modal-close { position:absolute; top:8px; right:8px; border:none; background:transparent; font-size:18px; cursor:pointer; }
+    .ms-modal-body { font-size:14px; line-height:1.6; }
+    .ms-modal-row { display:flex; gap:16px; align-items:flex-start; margin-top:4px; flex-wrap:wrap; }
+    .ms-modal-text { flex:1 1 60%; font-size:15px; line-height:1.5; }
+    .ms-modal-image { flex:1 1 30%; display:flex; align-items:flex-start; justify-content:flex-end; }
+    .ms-modal-logo-lg { max-width:180px; max-height:120px; height:auto; width:auto; border-radius:6px; }
     /* Bottom-sheet for mobile filters */
     .ms-bottom-sheet { position: fixed; left: 0; right: 0; bottom: 0; max-height: 80vh; background: #fff; box-shadow: 0 -8px 24px rgba(0,0,0,0.18); border-top-left-radius: 12px; border-top-right-radius: 12px; transform: translateY(100%); transition: transform .28s ease; z-index: 10004; overflow: auto; }
     .ms-bottom-sheet.open { transform: translateY(0%); }
@@ -63,6 +68,8 @@ controls_html = '''
     .ms-section { background:#f7f7f7; border-radius:8px; padding:8px 10px; margin-top:8px; }
     .ms-row { display:flex; flex-wrap:wrap; gap:8px; align-items:flex-start; margin: 6px 0; }
     .ms-row label { font-size: 12px; line-height:1.5; display:flex; align-items:center; flex:0 0 calc(50% - 8px); box-sizing:border-box; }
+    input.ms-filter-species:checked,
+    input.ms-filter-status:checked { accent-color:#424242; }
     .ms-all-toggle { display:flex; align-items:center; gap:8px; flex:0 0 100%; margin-bottom:4px; }
     .ms-all-toggle input[type=checkbox] { position:absolute; opacity:0; width:0; height:0; }
     .ms-all-track { width:32px; height:16px; border-radius:999px; background:#ccc; position:relative; flex-shrink:0; transition: background .15s ease; }
@@ -108,8 +115,9 @@ controls_html = '''
           <h4>Filter Status</h4>
           <div class="ms-row" id="ms-status-row"></div>
         </div>
-        <div class="ms-row ms-reset-wrap">
+        <div class="ms-row ms-reset-wrap" style="justify-content:space-between;">
           <button id="ms-reset" title="Alle Marker zeigen">⟲ Filter zurücksetzen</button>
+          <button id="ms-apply-desktop" title="Filter anwenden">Filter anwenden</button>
         </div>
       </div>
     </div>
@@ -343,12 +351,12 @@ controls_html = '''
           if(ev.target.id === 'ms-status-all' || ev.target.id === 'ms-status-all-sheet'){ var check = ev.target.checked; document.querySelectorAll('#ms-status-row input[type=checkbox], #ms-status-accordion-content input[type=checkbox]').forEach(function(cb){ if(cb !== ev.target) cb.checked = check; }); }
         }});
       }
-      // wire controls (desktop: expand/collapse box, mobile: open sheet)
+       // wire controls (desktop: expand/collapse box via Filter, explicit 'Filter anwenden'; mobile: open sheet)
       document.addEventListener('click', function(ev){
         var openBtn = document.getElementById('ms-open-sheet');
         var sheet = document.getElementById('ms-bottom-sheet');
         var ctrl = document.getElementById('ms-control');
-        // Filter button
+        // Filter button toggles desktop box or opens mobile sheet
         if(openBtn && ev.target === openBtn){
           if(window.innerWidth && window.innerWidth <= 600){
             if(sheet){ sheet.classList.add('open'); }
@@ -356,10 +364,10 @@ controls_html = '''
             if(ctrl){ ctrl.classList.toggle('collapsed'); }
           }
         }
-        // apply button in bottom sheet
-        if(ev.target && ev.target.id === 'ms-apply-filters'){
+        // apply buttons
+        if(ev.target && (ev.target.id === 'ms-apply-filters' || ev.target.id === 'ms-apply-desktop')){
           applyFilters();
-          if(sheet){ sheet.classList.remove('open'); }
+          if(sheet && ev.target.id === 'ms-apply-filters'){ sheet.classList.remove('open'); }
         }
         // accordion toggles in bottom sheet
         if(ev.target && ev.target.classList && ev.target.classList.contains('ms-accordion-toggle')){
