@@ -191,11 +191,6 @@ def main():
     .ms-hidden { display: none !important; }
     </style>
     <div class="ms-control">
-      <h4>Anzeige</h4>
-      <div class="ms-row">
-        <label><input type="checkbox" id="ms-show-species" checked> Arten</label>
-        <label><input type="checkbox" id="ms-show-status" checked> Status</label>
-      </div>
       <h4>Filter Arten</h4>
       <div class="ms-row" id="ms-species-row"></div>
       <h4>Filter Status</h4>
@@ -206,8 +201,6 @@ def main():
     </div>
     <script>
     (function(){
-      var showSpecies = true;
-      var showStatus = true;
       var SPECIES_COLORS_JS = %SPECIES_COLORS_JSON%;
       var STATUS_INFO_JS = %STATUS_INFO_JSON%;
       function applyMode(){
@@ -215,21 +208,11 @@ def main():
         els.forEach(function(el){
           var statusColor = el.getAttribute('data-statuscolor') || '#9e9e9e';
           var species = JSON.parse(el.getAttribute('data-species') || '[]');
-          // Species fill
-          if(showSpecies){
-            el.style.background = getGradient(species);
-          } else {
-            el.style.background = '#cccccc';
-          }
-          // Status border + badge
+          // Always show both: species gradient + status border/badge
+          el.style.background = getGradient(species);
+          el.style.outline = '2px solid ' + statusColor;
           var badge = el.querySelector('.ms-badge');
-          if(showStatus){
-            el.style.outline = '2px solid ' + statusColor;
-            if(badge) badge.style.display = 'block';
-          } else {
-            el.style.outline = '2px solid transparent';
-            if(badge) badge.style.display = 'none';
-          }
+          if(badge) badge.style.display = 'block';
         });
       }
       function getGradient(species){
@@ -339,17 +322,11 @@ def main():
         });
       }
       // wire controls
-      var showSpeciesBox = document.getElementById('ms-show-species');
-      var showStatusBox = document.getElementById('ms-show-status');
-      if(showSpeciesBox){ showSpeciesBox.addEventListener('change', function(){ showSpecies = this.checked; applyMode(); }); }
-      if(showStatusBox){ showStatusBox.addEventListener('change', function(){ showStatus = this.checked; applyMode(); }); }
       document.getElementById('ms-reset').addEventListener('click', function(){
         document.querySelectorAll('.ms-marker').forEach(function(el){ el.classList.remove('ms-hidden'); });
         document.querySelectorAll('.ms-filter-species, .ms-filter-status').forEach(function(el){ el.checked = true; });
         var speciesAll = document.getElementById('ms-species-all'); if(speciesAll) speciesAll.checked = true;
         var statusAll = document.getElementById('ms-status-all'); if(statusAll) statusAll.checked = true;
-        var showSpeciesBox = document.getElementById('ms-show-species'); if(showSpeciesBox){ showSpeciesBox.checked = true; showSpecies = true; }
-        var showStatusBox = document.getElementById('ms-show-status'); if(showStatusBox){ showStatusBox.checked = true; showStatus = true; }
         applyMode();
         applyFilters();
       });
