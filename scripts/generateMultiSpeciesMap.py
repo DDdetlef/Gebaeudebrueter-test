@@ -188,7 +188,7 @@ def main():
     .ms-control.collapsed { height: 44px; overflow: hidden; }
     .ms-control-header { display:flex; align-items:center; justify-content:space-between; gap:8px; }
     .ms-control h3 { margin: 0 0 6px 0; font-size: 15px; font-weight: 700; display:inline-block; }
-    .ms-collapse-btn { background: transparent; border: none; font-size: 18px; padding: 6px; cursor: pointer; line-height: 1; }
+    .ms-collapse-btn { background: transparent; border: none; font-size: 18px; padding: 6px; cursor: pointer; line-height: 1; position: absolute; top: 6px; right: 6px; z-index: 10001; }
     .ms-toggle { cursor: pointer; display: inline-flex; align-items: center; gap:6px; font-size:13px; color:#0b66c3; user-select: none; }
     .ms-toggle .arrow { display:inline-block; transition: transform .15s ease; }
     .ms-toggle.open .arrow { transform: rotate(90deg); }
@@ -232,7 +232,8 @@ def main():
       .ms-control.collapsed .ms-control-header + .ms-row { display: none; }
       .ms-control .ms-toggle { display: none; }
       .ms-control .ms-reset-wrap { display: none; }
-      .ms-control .ms-collapse-btn { display: inline-flex; }
+      /* keep collapse button visible and pinned to top-right of control */
+      .ms-collapse-btn { display: inline-flex; position: absolute; top: 6px; right: 6px; }
     }
     </style>
     <div class="ms-control" id="ms-control">
