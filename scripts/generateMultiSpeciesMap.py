@@ -25,6 +25,8 @@ STATUS_INFO = {
     'sanierung': {'label': 'Sanierung', 'color': '#e31a1c', 'short': 'S'},
     'ersatz': {'label': 'Ersatzmaßn.', 'color': '#00897b', 'short': 'E'},
     'kontrolle': {'label': 'Kontrolle', 'color': '#1976d2', 'short': 'K'},
+  # pseudo status for filtering rows where all status flags are 0
+  'none': {'label': 'Ohne Status', 'color': '#9e9e9e', 'short': '—'},
 }
 
 # Priority order for primary status selection (first match wins)
@@ -293,6 +295,8 @@ controls_html = '''
         var inner = el ? el.querySelector('.ms-marker') : null;
         if(inner){
           inner.style.background = computeGradient(spSel);
+          var hasNoStatus = !st || st.length === 0;
+          var wantsNoStatus = selectedStatus.indexOf('none') !== -1;
           var stSel = statusAll ? st : (selectedStatus.length ? intersection(st, selectedStatus) : []);
           var color = 'transparent';
           if(statusAll){
@@ -300,6 +304,8 @@ controls_html = '''
           } else if(stSel.length){
             var key = stSel[0];
             color = (STATUS_INFO_JS[key] && STATUS_INFO_JS[key].color) || (m._ms.statusColor || '#9e9e9e');
+          } else if(wantsNoStatus && hasNoStatus){
+            color = (STATUS_INFO_JS['none'] && STATUS_INFO_JS['none'].color) || (m._ms.statusColor || '#9e9e9e');
           }
           inner.style.outline = '2px solid ' + color;
           var badge = inner.querySelector('.ms-badge'); if(badge){ badge.style.display = stSel.length ? 'block' : 'none'; badge.style.background = color; }
@@ -320,7 +326,13 @@ controls_html = '''
           // - all selected => do not restrict (also includes markers with empty st/sp)
           // - subset selected => restrict to intersection
           var speciesAllows = speciesAll ? true : (selectedSpecies.length ? intersection(sp, selectedSpecies).length > 0 : false);
-          var statusAllows = statusAll ? true : (selectedStatus.length ? intersection(st, selectedStatus).length > 0 : false);
+          var hasNoStatus = !st || st.length === 0;
+          var wantsNoStatus = selectedStatus.indexOf('none') !== -1;
+          var statusAllows = statusAll ? true : (
+            selectedStatus.length ? (
+              (wantsNoStatus && hasNoStatus) || intersection(st, selectedStatus).length > 0
+            ) : false
+          );
           var visible = speciesAllows && statusAllows;
           if(visible){ toAdd.push(m); }
         }
