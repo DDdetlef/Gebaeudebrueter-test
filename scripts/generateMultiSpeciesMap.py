@@ -277,12 +277,17 @@ def main():
           var species = JSON.parse(el.getAttribute('data-species') || '[]');
           var statuses = JSON.parse(el.getAttribute('data-statuses') || '[]');
           var show = true;
-          if(selectedSpecies.length){
-            // show if any selected species present in marker
-            show = species.some(function(s){ return selectedSpecies.indexOf(s) !== -1; });
+          // Species filter: show only markers whose species set is a subset of selectedSpecies
+          if(selectedSpecies.length === 0){
+            show = false; // no species chosen → show none
+          } else {
+            show = species.length > 0 && species.every(function(s){ return selectedSpecies.indexOf(s) !== -1; });
           }
-          if(show && selectedStatus.length){
-            show = statuses.some(function(st){ return selectedStatus.indexOf(st) !== -1; });
+          // Status filter: require at least one of the selected statuses (if any selected)
+          if(show){
+            if(selectedStatus.length > 0){
+              show = statuses.some(function(st){ return selectedStatus.indexOf(st) !== -1; });
+            }
           }
           el.classList.toggle('ms-hidden', !show);
         });
