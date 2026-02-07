@@ -253,6 +253,11 @@ def main():
       // build filter checkboxes
       function buildFilters(){
         var sRow = document.getElementById('ms-species-row');
+        // 'Alle' for species
+        var sAllWrap = document.createElement('label'); sAllWrap.style.display='flex'; sAllWrap.style.alignItems='center';
+        var sAll = document.createElement('input'); sAll.type='checkbox'; sAll.id='ms-species-all'; sAll.checked=true;
+        sAllWrap.appendChild(sAll); sAllWrap.appendChild(document.createTextNode(' Alle'));
+        sRow.appendChild(sAllWrap);
         Object.keys(SPECIES_COLORS_JS).forEach(function(name){
           var id = 'ms-sp-' + name;
           var wrap = document.createElement('label');
@@ -266,6 +271,11 @@ def main():
           sRow.appendChild(wrap);
         });
         var stRow = document.getElementById('ms-status-row');
+        // 'Alle' for status
+        var stAllWrap = document.createElement('label'); stAllWrap.style.display='flex'; stAllWrap.style.alignItems='center';
+        var stAll = document.createElement('input'); stAll.type='checkbox'; stAll.id='ms-status-all'; stAll.checked=true;
+        stAllWrap.appendChild(stAll); stAllWrap.appendChild(document.createTextNode(' Alle'));
+        stRow.appendChild(stAllWrap);
         Object.keys(STATUS_INFO_JS).forEach(function(key){
           var info = STATUS_INFO_JS[key];
           var id = 'ms-st-' + key;
@@ -279,8 +289,10 @@ def main():
         });
       }
       function applyFilters(){
-        var selectedSpecies = Array.from(document.querySelectorAll('.ms-filter-species:checked')).map(function(el){ return el.value; });
-        var selectedStatus = Array.from(document.querySelectorAll('.ms-filter-status:checked')).map(function(el){ return el.value; });
+        var speciesAll = document.getElementById('ms-species-all');
+        var statusAll = document.getElementById('ms-status-all');
+        var selectedSpecies = speciesAll && speciesAll.checked ? [] : Array.from(document.querySelectorAll('.ms-filter-species:checked')).map(function(el){ return el.value; });
+        var selectedStatus = statusAll && statusAll.checked ? [] : Array.from(document.querySelectorAll('.ms-filter-status:checked')).map(function(el){ return el.value; });
         var els = document.querySelectorAll('.ms-marker');
         els.forEach(function(el){
           var species = JSON.parse(el.getAttribute('data-species') || '[]');
@@ -297,6 +309,24 @@ def main():
         });
       }
       function wireFilters(){
+        var speciesAll = document.getElementById('ms-species-all');
+        var statusAll = document.getElementById('ms-status-all');
+        if(speciesAll){
+          speciesAll.addEventListener('change', function(){
+            if(this.checked){
+              document.querySelectorAll('.ms-filter-species').forEach(function(el){ el.checked = false; });
+            }
+            applyFilters();
+          });
+        }
+        if(statusAll){
+          statusAll.addEventListener('change', function(){
+            if(this.checked){
+              document.querySelectorAll('.ms-filter-status').forEach(function(el){ el.checked = false; });
+            }
+            applyFilters();
+          });
+        }
         document.querySelectorAll('.ms-filter-species, .ms-filter-status').forEach(function(el){
           el.addEventListener('change', applyFilters);
         });
@@ -308,6 +338,8 @@ def main():
       document.getElementById('ms-reset').addEventListener('click', function(){
         document.querySelectorAll('.ms-marker').forEach(function(el){ el.classList.remove('ms-hidden'); });
         document.querySelectorAll('.ms-filter-species, .ms-filter-status').forEach(function(el){ el.checked = false; });
+        var speciesAll = document.getElementById('ms-species-all'); if(speciesAll) speciesAll.checked = true;
+        var statusAll = document.getElementById('ms-status-all'); if(statusAll) statusAll.checked = true;
         applyMode();
       });
       // initial pass
