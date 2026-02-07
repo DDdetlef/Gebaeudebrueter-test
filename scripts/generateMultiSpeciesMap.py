@@ -168,7 +168,7 @@ def main():
 
         address_text = f"{r['strasse']}, {r['plz']} {r['ort']}"
         icon_html = build_divicon_html(species, primary_status, all_statuses, address_text)
-        icon = folium.DivIcon(html=icon_html, icon_size=(26, 26), icon_anchor=(13, 13))
+        icon = folium.DivIcon(html=icon_html, icon_size=(26, 26), icon_anchor=(13, 13), class_name='ms-div-icon')
 
         tooltip_text = 'Mehrere Arten' if len(species) > 1 else (species[0] if species else 'Andere')
         folium.Marker(
@@ -189,6 +189,7 @@ def main():
     .ms-row label { font-size: 12px; }
     .ms-badge { display: none; }
     .ms-hidden { display: none !important; }
+    .leaflet-marker-icon.ms-div-icon { background: transparent !important; border: none !important; box-shadow: none !important; }
     </style>
     <div class="ms-control">
       <h4>Filter Arten</h4>
@@ -256,16 +257,17 @@ def main():
         var st = m._ms.statuses || [];
         var spSel = selectedSpecies.length ? intersection(sp, selectedSpecies) : [];
         var el = m._icon;
-        if(el){
-          el.style.background = computeGradient(spSel);
+        var inner = el ? el.querySelector('.ms-marker') : null;
+        if(inner){
+          inner.style.background = computeGradient(spSel);
           var stSel = selectedStatus.length ? intersection(st, selectedStatus) : [];
           var color = 'transparent';
           if(stSel.length){
             var key = stSel[0];
             color = (STATUS_INFO_JS[key] && STATUS_INFO_JS[key].color) || (m._ms.statusColor || '#9e9e9e');
           }
-          el.style.outline = '2px solid ' + color;
-          var badge = el.querySelector('.ms-badge'); if(badge){ badge.style.display = stSel.length ? 'block' : 'none'; badge.style.background = color; }
+          inner.style.outline = '2px solid ' + color;
+          var badge = inner.querySelector('.ms-badge'); if(badge){ badge.style.display = stSel.length ? 'block' : 'none'; badge.style.background = color; }
         }
       }
       function rebuildCluster(selectedSpecies, selectedStatus){
