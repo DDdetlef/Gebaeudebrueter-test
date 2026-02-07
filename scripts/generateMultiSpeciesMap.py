@@ -183,10 +183,12 @@ def main():
     controls_html = '''
     <style>
     .leaflet-container .ms-marker:hover { transform: scale(1.15); box-shadow: 0 1px 6px rgba(0,0,0,0.35); }
-    .ms-control { position: fixed; top: 10px; left: 10px; background: #fff; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; z-index: 9999; box-shadow: 0 2px 8px rgba(0,0,0,0.08); font-family: sans-serif; }
+    /* Desktop control */
     .ms-control { position: fixed; top: 10px; left: 10px; background: #fff; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; z-index: 9999; box-shadow: 0 2px 8px rgba(0,0,0,0.08); font-family: sans-serif; max-width:380px; max-height:80vh; overflow:auto; box-sizing:border-box; }
-    .ms-control-header { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+    .ms-control.collapsed { height: 44px; overflow: hidden; }
+    .ms-control-header { display:flex; align-items:center; justify-content:space-between; gap:8px; }
     .ms-control h3 { margin: 0 0 6px 0; font-size: 15px; font-weight: 700; display:inline-block; }
+    .ms-collapse-btn { background: transparent; border: none; font-size: 18px; padding: 6px; cursor: pointer; line-height: 1; }
     .ms-toggle { cursor: pointer; display: inline-flex; align-items: center; gap:6px; font-size:13px; color:#0b66c3; user-select: none; }
     .ms-toggle .arrow { display:inline-block; transition: transform .15s ease; }
     .ms-toggle.open .arrow { transform: rotate(90deg); }
@@ -222,18 +224,25 @@ def main():
     }
     .leaflet-marker-icon.ms-div-icon::before,
     .leaflet-marker-icon.ms-div-icon::after { display: none !important; }
-    @media (max-width: 420px) {
-      .ms-control { max-width: 92vw; }
+    /* Mobile behaviour: floating compact control bottom-left with collapse */
+    @media (max-width: 600px) {
+      .ms-control { top: auto; left: 10px; right: auto; bottom: 10px; max-width: 92vw; border-radius: 10px; padding: 8px 10px; }
+      .ms-control.collapsed { height: 44px; overflow: hidden; }
+      .ms-control .ms-row, .ms-control h4 { display: none; }
+      .ms-control.collapsed .ms-control-header + .ms-row { display: none; }
+      .ms-control .ms-toggle { display: none; }
+      .ms-control .ms-reset-wrap { display: none; }
+      .ms-control .ms-collapse-btn { display: inline-flex; }
     }
     </style>
-    <div class="ms-control">
-      <div class="ms-control-header"><h3>Karte der Gebäudebrüter in Berlin</h3></div>
+    <div class="ms-control" id="ms-control">
+      <div class="ms-control-header"><h3>Karte der Gebäudebrüter in Berlin</h3><div><button id="ms-control-toggle" class="ms-collapse-btn" aria-expanded="true" title="Ein-/Ausklappen">☰</button></div></div>
       <div class="ms-row"><div id="ms-more-info-toggle" class="ms-toggle" title="Mehr Informationen anzeigen"><span class="arrow">►</span><span>Mehr Infos / Hilfe</span></div></div>
       <h4>Filter Arten</h4>
       <div class="ms-row" id="ms-species-row"></div>
       <h4>Filter Status</h4>
       <div class="ms-row" id="ms-status-row"></div>
-      <div class="ms-row">
+      <div class="ms-row ms-reset-wrap">
         <button id="ms-reset" title="Alle Marker zeigen">Reset</button>
       </div>
     </div>
@@ -501,6 +510,24 @@ def main():
       resolveMapAndCluster(function(map, cluster){ MS.map = map; MS.cluster = cluster; initMarkers(); });
       buildFilters();
       wireFilters();
+      // control collapse behavior (responsive)
+      (function(){
+        var ctrl = document.getElementById('ms-control');
+        var btn = document.getElementById('ms-control-toggle');
+        if(!ctrl || !btn) return;
+        function setCollapsed(collapsed){
+          if(collapsed){ ctrl.classList.add('collapsed'); btn.setAttribute('aria-expanded','false'); }
+          else { ctrl.classList.remove('collapsed'); btn.setAttribute('aria-expanded','true'); }
+        }
+        // toggle and persist
+        btn.addEventListener('click', function(ev){ ev.preventDefault(); var cur = ctrl.classList.contains('collapsed'); setCollapsed(!cur); try{ localStorage.setItem('msControlCollapsed', !cur ? '1' : '0'); }catch(e){} });
+        // initialize: collapse on narrow screens unless user preference stored
+        try{
+          var pref = localStorage.getItem('msControlCollapsed');
+          if(pref !== null){ setCollapsed(pref === '1'); }
+          else { if(window.matchMedia && window.matchMedia('(max-width:600px)').matches){ setCollapsed(true); } }
+        }catch(e){ if(window.matchMedia && window.matchMedia('(max-width:600px)').matches){ setCollapsed(true); } }
+      })();
       setTimeout(function(){
         var selectedSpecies = Object.keys(SPECIES_COLORS_JS);
         var selectedStatus = Object.keys(STATUS_INFO_JS);
