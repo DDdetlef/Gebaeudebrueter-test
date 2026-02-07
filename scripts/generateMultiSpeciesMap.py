@@ -232,12 +232,14 @@ def main():
         <div class="ms-modal-body">
           <div class="ms-modal-header">
             <h2 class="ms-modal-title">Karte der Gebäudebrüter in Berlin</h2>
-            <img src="../images/Logo%20BezGr%20SteglitzTempelhof%20farb%20(1).jpg" alt="Logo Gebäudebrüterschutz NABU Bezirksgruppe Steglitz-Zehlendorf" class="ms-modal-logo" />
+            <img src="images/Logo%20BezGr%20SteglitzTempelhof%20farb%20(1).jpg" alt="Logo Gebäudebrüterschutz NABU Bezirksgruppe Steglitz-Zehlendorf" class="ms-modal-logo" />
           </div>
-          <h3 class="ms-modal-section-title">Karte der Gebäudebrüter in Berlin</h3>
+          <p>Diese Karte zeigt Standorte von Gebäudebrütern in Berlin an. Die Daten stammen aus der Online-Datenbank des Projekts Gebäudebrüterschutz der NABU Bezirksgruppe Steglitz-Zehlendorf (<a href="http://www.gebaeudebrueter-in-berlin.de/index.php" target="_blank" rel="noopener">www.gebaeudebrueter-in-berlin.de</a>).</p>
           <h3 class="ms-modal-section-title">Wie funktioniert&#39;s?</h3>
-          <p>Nutzen Sie die Filter auf der linken Seite, um die angezeigten Arten und den Status von Nachweisen (z. B. Sanierung, Kontrolle, Ersatzmaßnahmen) gezielt ein- oder auszublenden.</p>
-          <p>Klicken Sie auf einen Standort-Marker, um weitere Informationen zu den dort erfassten Arten und Maßnahmen zu erhalten.</p>
+          <ol>
+            <li>Nutzen Sie die Filter auf der linken Seite, um die angezeigten Arten und den Status von Nachweisen (z. B. Sanierung, Kontrolle, Ersatzmaßnahmen) gezielt ein- oder auszublenden.</li>
+            <li>Klicken Sie auf einen Standort-Marker, um weitere Informationen zu den dort erfassten Arten und Maßnahmen zu erhalten.</li>
+          </ol>
         </div>
       </div>
     </div>
