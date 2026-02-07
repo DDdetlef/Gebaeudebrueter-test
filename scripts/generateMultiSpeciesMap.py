@@ -51,7 +51,7 @@ controls_html = '''
     .ms-modal-content { background: #fff; padding: 18px 22px; border-radius:10px; max-width:700px; width:calc(100% - 40px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); position:relative; }
     .ms-modal-close { position:absolute; top:8px; right:8px; border:none; background:transparent; font-size:18px; cursor:pointer; }
     /* Bottom-sheet for mobile filters */
-    .ms-bottom-sheet { position: fixed; left: 0; right: 0; bottom: 0; height: 0; max-height: 80vh; background: #fff; box-shadow: 0 -8px 24px rgba(0,0,0,0.18); border-top-left-radius: 12px; border-top-right-radius: 12px; transform: translateY(100%); transition: transform .28s ease; z-index: 10004; overflow: auto; }
+    .ms-bottom-sheet { position: fixed; left: 0; right: 0; bottom: 0; max-height: 80vh; background: #fff; box-shadow: 0 -8px 24px rgba(0,0,0,0.18); border-top-left-radius: 12px; border-top-right-radius: 12px; transform: translateY(100%); transition: transform .28s ease; z-index: 10004; overflow: auto; }
     .ms-bottom-sheet.open { transform: translateY(0%); }
     .ms-sheet-header { display:flex; align-items:center; justify-content:space-between; padding: 12px 16px; border-bottom:1px solid #eee; }
     .ms-sheet-handle { width:36px; height:4px; background:#ddd; border-radius:4px; margin:8px auto; }
