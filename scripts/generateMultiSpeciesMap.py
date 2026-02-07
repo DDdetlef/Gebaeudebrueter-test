@@ -193,7 +193,7 @@ def main():
     .ms-modal-close { position:absolute; top:8px; right:8px; border:none; background:transparent; font-size:18px; cursor:pointer; }
     .ms-modal-body { font-size:14px; line-height:1.6; }
     .ms-modal-header { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; margin-bottom:10px; }
-    .ms-modal-logo { flex:0 0 auto; max-height:56px; width:auto; border-radius:4px; margin-left:12px; }
+    .ms-modal-logo { flex:0 0 auto; max-height:112px; width:auto; border-radius:4px; margin-left:12px; }
     .ms-modal-title { margin:0; font-size:18px; font-weight:700; }
     .ms-modal-section-title { margin:12px 0 4px 0; font-size:15px; font-weight:700; }
     .ms-modal-body ol { padding-left:20px; margin:6px 0 0 0; }
@@ -234,7 +234,7 @@ def main():
             <h2 class="ms-modal-title">Karte der Gebäudebrüter in Berlin</h2>
             <img src="images/Logo%20BezGr%20SteglitzTempelhof%20farb%20(1).jpg" alt="Logo Gebäudebrüterschutz NABU Bezirksgruppe Steglitz-Zehlendorf" class="ms-modal-logo" />
           </div>
-          <p>Diese Karte zeigt Standorte von Gebäudebrütern in Berlin an. Die Daten stammen aus der Online-Datenbank des Projekts Gebäudebrüterschutz der NABU Bezirksgruppe Steglitz-Zehlendorf (<a href="http://www.gebaeudebrueter-in-berlin.de/index.php" target="_blank" rel="noopener">www.gebaeudebrueter-in-berlin.de</a>).</p>
+          <p>Diese Karte zeigt Standorte von Gebäudebrütern in Berlin an. Gebäudebrüter sind Tiere wie Mauersegler, Schwalben, Sperlinge oder Fledermäuse, die an oder in Gebäuden leben. Die Markierungen stehen für Häuser, an denen Gebäudebrüter gefunden und gemeldet wurden. Die Informationen stammen aus der Online-Datenbank des Projekts Gebäudebrüterschutz der NABU Bezirksgruppe Steglitz-Zehlendorf (<a href="http://www.gebaeudebrueter-in-berlin.de/index.php" target="_blank" rel="noopener">www.gebaeudebrueter-in-berlin.de</a>).</p>
           <h3 class="ms-modal-section-title">Wie funktioniert&#39;s?</h3>
           <ol>
             <li>Nutzen Sie die Filter auf der linken Seite, um die angezeigten Arten und den Status von Nachweisen (z. B. Sanierung, Kontrolle, Ersatzmaßnahmen) gezielt ein- oder auszublenden.</li>
