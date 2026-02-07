@@ -39,10 +39,10 @@ controls_html = '''
     /* Control box (desktop + mobile pinned top-right) */
     .ms-control { position: fixed; top: 10px; right: 10px; left: auto; background: #fff; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; z-index: 10002; box-shadow: 0 2px 8px rgba(0,0,0,0.08); font-family: sans-serif; max-width:380px; max-height:80vh; overflow:auto; box-sizing:border-box; }
     .ms-control.collapsed { height: 44px; overflow: hidden; }
-    .ms-control-header { display:flex; align-items:center; justify-content:space-between; gap:8px; position:relative; padding-right:48px; }
+    .ms-control-header { display:flex; align-items:center; justify-content:space-between; gap:8px; position:relative; }
     .ms-control h3 { margin: 0 0 6px 0; font-size: 15px; font-weight: 700; display:inline-block; }
     .ms-collapse-btn { background: rgba(255,255,255,0.95); border: 1px solid rgba(0,0,0,0.06); font-size: 18px; padding: 8px; cursor: pointer; line-height: 1; position: absolute; top: 6px; right: 6px; z-index: 10010; touch-action: manipulation; -webkit-tap-highlight-color: transparent; pointer-events: auto; border-radius:6px; }
-    .ms-open-sheet-btn { display:none; font-size:13px; padding:6px 8px; border-radius:6px; border:1px solid #ddd; background:#fff; cursor:pointer; }
+    .ms-open-sheet-btn { font-size:13px; padding:6px 8px; border-radius:6px; border:1px solid #ddd; background:#fff; cursor:pointer; }
     .ms-toggle { cursor: pointer; display: inline-flex; align-items: center; gap:6px; font-size:13px; color:#0b66c3; user-select: none; }
     .ms-toggle .arrow { display:inline-block; transition: transform .15s ease; }
     .ms-toggle.open .arrow { transform: rotate(90deg); }
@@ -75,22 +75,20 @@ controls_html = '''
     .leaflet-marker-icon.ms-div-icon::after { display: none !important; }
     @media (max-width: 600px) {
       /* Pin control to top-right on mobile but show compact header and filter button */
-      .ms-control { top: 10px; right: 10px; left: auto; bottom: auto; max-width: 92vw; border-radius: 10px; padding: 8px 10px; padding-right: 56px; }
+      .ms-control { top: 10px; right: 10px; left: auto; bottom: auto; max-width: 92vw; border-radius: 10px; padding: 8px 10px; }
       .ms-control.collapsed { height: 44px; overflow: hidden; }
       .ms-control .ms-row, .ms-control h4 { display: none; }
       .ms-control .ms-toggle { display: none; }
       .ms-control .ms-reset-wrap { display: none; }
       .ms-open-sheet-btn { display:inline-block; }
-      .ms-collapse-btn { display:inline-block; }
       /* ensure bottom-sheet is above most elements */
       .ms-bottom-sheet { z-index: 10005; }
     }
     </style>
-    <div class="ms-control" id="ms-control">
+    <div class="ms-control collapsed" id="ms-control">
       <div class="ms-control-header"><h3>Karte der Gebäudebrüter in Berlin</h3>
         <div style="display:flex;align-items:center;gap:8px">
           <button id="ms-open-sheet" class="ms-open-sheet-btn" title="Filter öffnen">Filter</button>
-          <button id="ms-control-toggle" class="ms-collapse-btn" aria-expanded="true" title="Ein-/Ausklappen">☰</button>
         </div>
       </div>
       <div class="ms-row"><div id="ms-more-info-toggle" class="ms-toggle" title="Mehr Informationen anzeigen"><span class="arrow">►</span><span>Mehr Infos / Hilfe</span></div></div>
@@ -316,20 +314,37 @@ controls_html = '''
           if(ev.target.id === 'ms-status-all' || ev.target.id === 'ms-status-all-sheet'){ var check = ev.target.checked; document.querySelectorAll('#ms-status-row input[type=checkbox], #ms-status-accordion-content input[type=checkbox]').forEach(function(cb){ if(cb !== ev.target) cb.checked = check; }); }
         }});
       }
-      // wire controls
+      // wire controls (desktop: expand/collapse box, mobile: open sheet)
       document.addEventListener('click', function(ev){
-        // open bottom-sheet
         var openBtn = document.getElementById('ms-open-sheet');
-        if(ev.target === openBtn){ document.getElementById('ms-bottom-sheet').classList.add('open'); }
-        // apply button
-        if(ev.target.id === 'ms-apply-filters'){ applyFilters(); document.getElementById('ms-bottom-sheet').classList.remove('open'); }
-        // accordion toggles
-        if(ev.target.classList && ev.target.classList.contains('ms-accordion-toggle')){ var t = ev.target.getAttribute('data-target'); var node = document.getElementById(t); if(node){ node.classList.toggle('open'); } }
+        var sheet = document.getElementById('ms-bottom-sheet');
+        var ctrl = document.getElementById('ms-control');
+        // Filter button
+        if(openBtn && ev.target === openBtn){
+          if(window.innerWidth && window.innerWidth <= 600){
+            if(sheet){ sheet.classList.add('open'); }
+          } else {
+            if(ctrl){ ctrl.classList.toggle('collapsed'); }
+          }
+        }
+        // apply button in bottom sheet
+        if(ev.target && ev.target.id === 'ms-apply-filters'){
+          applyFilters();
+          if(sheet){ sheet.classList.remove('open'); }
+        }
+        // accordion toggles in bottom sheet
+        if(ev.target && ev.target.classList && ev.target.classList.contains('ms-accordion-toggle')){
+          var t = ev.target.getAttribute('data-target');
+          var node = document.getElementById(t);
+          if(node){ node.classList.toggle('open'); }
+        }
       });
       // reset button
       document.addEventListener('click', function(ev){ if(ev.target && ev.target.id === 'ms-reset'){ document.querySelectorAll('.ms-filter-species, .ms-filter-status').forEach(function(el){ el.checked = true; }); var selectedSpecies = Object.keys(SPECIES_COLORS_JS); var selectedStatus = Object.keys(STATUS_INFO_JS); rebuildCluster(selectedSpecies, selectedStatus); } });
-      // open/close bottom sheet via handle (swipe gestures minimal support)
-      (function(){ var sheet = document.getElementById('ms-bottom-sheet'); var openBtn = document.getElementById('ms-open-sheet'); if(!sheet) return; document.getElementById('ms-control-toggle').addEventListener('click', function(){ var ctrl = document.getElementById('ms-control'); ctrl.classList.toggle('collapsed'); }); if(openBtn){ openBtn.addEventListener('click', function(){ sheet.classList.add('open'); }); }
+      // close bottom sheet when tapping backdrop
+      (function(){
+        var sheet = document.getElementById('ms-bottom-sheet');
+        if(!sheet) return;
         sheet.addEventListener('click', function(ev){ if(ev.target === sheet){ sheet.classList.remove('open'); } });
       })();
       // initial pass
