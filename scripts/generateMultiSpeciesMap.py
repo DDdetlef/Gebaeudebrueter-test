@@ -41,7 +41,6 @@ controls_html = '''
     .ms-control.collapsed { height: 44px; overflow: hidden; }
     .ms-control-header { display:flex; align-items:center; justify-content:space-between; gap:8px; position:relative; padding-right:48px; }
     .ms-control h3 { margin: 0 0 6px 0; font-size: 15px; font-weight: 700; display:inline-block; }
-    .ms-link-mode { font-size:12px; color:#0b66c3; padding:4px 6px; border-radius:4px; border:1px solid #e0e0e0; background:#f9f9ff; cursor:pointer; }
     .ms-collapse-btn { background: rgba(255,255,255,0.95); border: 1px solid rgba(0,0,0,0.06); font-size: 18px; padding: 8px; cursor: pointer; line-height: 1; position: absolute; top: 6px; right: 6px; z-index: 10010; touch-action: manipulation; -webkit-tap-highlight-color: transparent; pointer-events: auto; border-radius:6px; }
     .ms-open-sheet-btn { display:none; font-size:13px; padding:6px 8px; border-radius:6px; border:1px solid #ddd; background:#fff; cursor:pointer; }
     .ms-toggle { cursor: pointer; display: inline-flex; align-items: center; gap:6px; font-size:13px; color:#0b66c3; user-select: none; }
@@ -90,7 +89,6 @@ controls_html = '''
     <div class="ms-control" id="ms-control">
       <div class="ms-control-header"><h3>Karte der Gebäudebrüter in Berlin</h3>
         <div style="display:flex;align-items:center;gap:8px">
-          <div id="ms-link-mode" class="ms-link-mode" title="Wechseln ODER/UND">UND</div>
           <button id="ms-open-sheet" class="ms-open-sheet-btn" title="Filter öffnen">Filter</button>
           <button id="ms-control-toggle" class="ms-collapse-btn" aria-expanded="true" title="Ein-/Ausklappen">☰</button>
         </div>
@@ -112,7 +110,6 @@ controls_html = '''
       <div class="ms-sheet-handle"></div>
       <div class="ms-sheet-header">
         <strong>Filter</strong>
-        <div id="ms-link-mode-sheet" class="ms-link-mode">UND-Verknüpfung aktiv</div>
       </div>
       <div>
         <button class="ms-accordion-toggle" data-target="ms-species-accordion-content">▸ Arten</button>
@@ -155,9 +152,8 @@ controls_html = '''
     (function(){
       var SPECIES_COLORS_JS = %SPECIES_COLORS_JSON%;
       var STATUS_INFO_JS = %STATUS_INFO_JSON%;
-      // Cluster-aware filtering support
+      // Cluster-aware filtering support (always AND across groups)
       var MS = { map:null, cluster:null, markers:[], ready:false };
-      var LINK_MODE_JS = 'and'; // 'and' or 'or'
       function resolveMapAndCluster(cb){
         function tryResolve(){
           var mapVarName = Object.keys(window).find(function(k){ return /^map_/.test(k); });
@@ -251,10 +247,8 @@ controls_html = '''
           var statusSelected = selectedStatus.length > 0;
           var visible = false;
           // If no filters selected -> show all
-          if(!speciesSelected && !statusSelected){ visible = true; }
-          else if(LINK_MODE_JS === 'or'){
-            // OR across groups
-            visible = (speciesSelected && speciesMatch) || (statusSelected && statusMatch);
+          if(!speciesSelected && !statusSelected){
+            visible = true;
           } else {
             // AND across groups (when both selected), otherwise single-group matching
             if(speciesSelected && statusSelected){ visible = speciesMatch && statusMatch; }
@@ -332,16 +326,6 @@ controls_html = '''
         // accordion toggles
         if(ev.target.classList && ev.target.classList.contains('ms-accordion-toggle')){ var t = ev.target.getAttribute('data-target'); var node = document.getElementById(t); if(node){ node.classList.toggle('open'); } }
       });
-      // link-mode toggle (desktop + sheet)
-      (function(){
-        var lm = document.getElementById('ms-link-mode');
-        var lms = document.getElementById('ms-link-mode-sheet');
-        function updateLabel(){ if(LINK_MODE_JS === 'and'){ if(lm) lm.textContent = 'UND'; if(lms) lms.textContent = 'UND-Verknüpfung aktiv'; } else { if(lm) lm.textContent = 'ODER'; if(lms) lms.textContent = 'ODER-Verknüpfung aktiv'; } }
-        function toggleMode(){ LINK_MODE_JS = (LINK_MODE_JS === 'and' ? 'or' : 'and'); updateLabel(); }
-        if(lm) lm.addEventListener('click', toggleMode);
-        if(lms) lms.addEventListener('click', toggleMode);
-        updateLabel();
-      })();
       // reset button
       document.addEventListener('click', function(ev){ if(ev.target && ev.target.id === 'ms-reset'){ document.querySelectorAll('.ms-filter-species, .ms-filter-status').forEach(function(el){ el.checked = true; }); var selectedSpecies = Object.keys(SPECIES_COLORS_JS); var selectedStatus = Object.keys(STATUS_INFO_JS); rebuildCluster(selectedSpecies, selectedStatus); } });
       // open/close bottom sheet via handle (swipe gestures minimal support)
