@@ -127,6 +127,7 @@ controls_html = '''
       <div class="ms-sheet-handle"></div>
       <div class="ms-sheet-header">
         <strong>Filter</strong>
+        <button id="ms-more-info-toggle-sheet" class="ms-toggle" title="Mehr Informationen anzeigen" style="background:none;border:none;padding:0;cursor:pointer;"><span>ⓘ ?</span></button>
       </div>
       <div>
         <button class="ms-accordion-toggle" data-target="ms-species-accordion-content">▸ Arten</button>
@@ -206,16 +207,18 @@ controls_html = '''
         });
         MS.ready = true;
       }
-      // More info modal toggle
+      // More info modal toggle (desktop + mobile sheet)
       (function(){
-        var tog = document.getElementById('ms-more-info-toggle');
+        var togDesktop = document.getElementById('ms-more-info-toggle');
+        var togSheet = document.getElementById('ms-more-info-toggle-sheet');
         var modal = document.getElementById('ms-info-modal');
         var closeBtn = document.getElementById('ms-info-close');
-        if(tog && modal){
-          tog.addEventListener('click', function(ev){ ev.preventDefault(); modal.style.display = 'flex'; tog.classList.add('open'); });
-          if(closeBtn){ closeBtn.addEventListener('click', function(){ modal.style.display = 'none'; tog.classList.remove('open'); }); }
-          modal.addEventListener('click', function(ev){ if(ev.target === modal){ modal.style.display = 'none'; tog.classList.remove('open'); } });
-        }
+        function openModal(ev){ if(ev){ ev.preventDefault(); } if(modal){ modal.style.display = 'flex'; } }
+        function closeModal(){ if(modal){ modal.style.display = 'none'; } }
+        if(togDesktop){ togDesktop.addEventListener('click', openModal); }
+        if(togSheet){ togSheet.addEventListener('click', openModal); }
+        if(closeBtn){ closeBtn.addEventListener('click', closeModal); }
+        if(modal){ modal.addEventListener('click', function(ev){ if(ev.target === modal){ closeModal(); } }); }
       })();
       function intersection(a, b){ return a.filter(function(x){ return b.indexOf(x) !== -1; }); }
       function computeGradient(species){
