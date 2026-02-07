@@ -195,6 +195,8 @@ controls_html = '''
     (function(){
       var SPECIES_COLORS_JS = %SPECIES_COLORS_JSON%;
       var STATUS_INFO_JS = %STATUS_INFO_JSON%;
+      var ALL_SPECIES = Object.keys(SPECIES_COLORS_JS);
+      var ALL_STATUS = Object.keys(STATUS_INFO_JS);
       // Cluster-aware filtering support (always AND across groups)
       var MS = { map:null, cluster:null, markers:[], ready:false };
       function resolveMapAndCluster(cb){
@@ -283,17 +285,19 @@ controls_html = '''
         }
         return 'conic-gradient(' + stops.join(', ') + ')';
       }
-      function applyVisualsToMarker(m, selectedSpecies, selectedStatus){
+      function applyVisualsToMarker(m, selectedSpecies, selectedStatus, speciesAll, statusAll){
         var sp = m._ms.species || [];
         var st = m._ms.statuses || [];
-        var spSel = selectedSpecies.length ? intersection(sp, selectedSpecies) : [];
+        var spSel = speciesAll ? sp : (selectedSpecies.length ? intersection(sp, selectedSpecies) : []);
         var el = m._icon;
         var inner = el ? el.querySelector('.ms-marker') : null;
         if(inner){
           inner.style.background = computeGradient(spSel);
-          var stSel = selectedStatus.length ? intersection(st, selectedStatus) : [];
+          var stSel = statusAll ? st : (selectedStatus.length ? intersection(st, selectedStatus) : []);
           var color = 'transparent';
-          if(stSel.length){
+          if(statusAll){
+            color = m._ms.statusColor || '#9e9e9e';
+          } else if(stSel.length){
             var key = stSel[0];
             color = (STATUS_INFO_JS[key] && STATUS_INFO_JS[key].color) || (m._ms.statusColor || '#9e9e9e');
           }
@@ -304,29 +308,24 @@ controls_html = '''
       function rebuildCluster(selectedSpecies, selectedStatus){
         if(!MS.ready){ return; }
         MS.cluster.clearLayers();
+        var speciesAll = selectedSpecies.length === ALL_SPECIES.length;
+        var statusAll = selectedStatus.length === ALL_STATUS.length;
         var toAdd = [];
         for(var i=0;i<MS.markers.length;i++){
           var m = MS.markers[i];
           var sp = m._ms.species || [];
           var st = m._ms.statuses || [];
-          var speciesMatch = selectedSpecies.length ? intersection(sp, selectedSpecies).length > 0 : false;
-          var statusMatch = selectedStatus.length ? intersection(st, selectedStatus).length > 0 : false;
-          var speciesSelected = selectedSpecies.length > 0;
-          var statusSelected = selectedStatus.length > 0;
-          var visible = false;
-          // If no filters selected -> show all
-          if(!speciesSelected && !statusSelected){
-            visible = true;
-          } else {
-            // AND across groups (when both selected), otherwise single-group matching
-            if(speciesSelected && statusSelected){ visible = speciesMatch && statusMatch; }
-            else if(speciesSelected){ visible = speciesMatch; }
-            else { visible = statusMatch; }
-          }
+          // Group semantics:
+          // - none selected => show nothing
+          // - all selected => do not restrict (also includes markers with empty st/sp)
+          // - subset selected => restrict to intersection
+          var speciesAllows = speciesAll ? true : (selectedSpecies.length ? intersection(sp, selectedSpecies).length > 0 : false);
+          var statusAllows = statusAll ? true : (selectedStatus.length ? intersection(st, selectedStatus).length > 0 : false);
+          var visible = speciesAllows && statusAllows;
           if(visible){ toAdd.push(m); }
         }
         toAdd.forEach(function(m){ MS.cluster.addLayer(m); });
-        setTimeout(function(){ MS.cluster.getLayers().forEach(function(m){ applyVisualsToMarker(m, selectedSpecies, selectedStatus); }); }, 75);
+        setTimeout(function(){ MS.cluster.getLayers().forEach(function(m){ applyVisualsToMarker(m, selectedSpecies, selectedStatus, speciesAll, statusAll); }); }, 75);
       }
       // build filter checkboxes into desktop and bottom-sheet accordions
       function buildFilters(){
