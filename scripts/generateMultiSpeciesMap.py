@@ -278,7 +278,8 @@ def main():
           var st = m._ms.statuses || [];
           var speciesMatch = selectedSpecies.length ? intersection(sp, selectedSpecies).length > 0 : false;
           var statusMatch = selectedStatus.length ? intersection(st, selectedStatus).length > 0 : false;
-          var visible = speciesMatch || statusMatch; // OR across groups; empty groups not fulfilled
+          // AND across groups; empty groups are not fulfilled
+          var visible = speciesMatch && statusMatch;
           if(visible){ toAdd.push(m); }
         }
         toAdd.forEach(function(m){ MS.cluster.addLayer(m); });
