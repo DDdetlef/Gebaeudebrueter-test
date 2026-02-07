@@ -157,7 +157,7 @@ controls_html = '''
               <img src="images/Logo%20BezGr%20SteglitzTempelhof%20farb%20(1).jpg" alt="Logo" class="ms-modal-logo-lg" />
             </div>
           </div>
-          <h3 class="ms-modal-section-title">Wie funktioniert&#39;s?</h3>
+          <h3 class="ms-modal-section-title">Tipps für die Nutzung der Karte</h3>
           <div class="ms-modal-text">
             <ol>
               <li>Nutzen Sie die Filter auf der linken Seite, um die angezeigten Arten und den Status von Nachweisen (z. B. Sanierung, Kontrolle, Ersatzmaßnahmen) gezielt ein- oder auszublenden.</li>
