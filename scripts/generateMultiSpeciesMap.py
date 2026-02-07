@@ -184,7 +184,7 @@ def main():
     <style>
     .leaflet-container .ms-marker:hover { transform: scale(1.15); box-shadow: 0 1px 6px rgba(0,0,0,0.35); }
     /* Desktop control */
-    .ms-control { position: fixed; top: 10px; left: 10px; background: #fff; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; z-index: 9999; box-shadow: 0 2px 8px rgba(0,0,0,0.08); font-family: sans-serif; max-width:380px; max-height:80vh; overflow:auto; box-sizing:border-box; }
+    .ms-control { position: fixed; top: 10px; right: 10px; left: auto; background: #fff; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; z-index: 9999; box-shadow: 0 2px 8px rgba(0,0,0,0.08); font-family: sans-serif; max-width:380px; max-height:80vh; overflow:auto; box-sizing:border-box; }
     .ms-control.collapsed { height: 44px; overflow: hidden; }
     .ms-control-header { display:flex; align-items:center; justify-content:space-between; gap:8px; }
     .ms-control h3 { margin: 0 0 6px 0; font-size: 15px; font-weight: 700; display:inline-block; }
@@ -226,7 +226,7 @@ def main():
     .leaflet-marker-icon.ms-div-icon::after { display: none !important; }
     /* Mobile behaviour: floating compact control bottom-left with collapse */
     @media (max-width: 600px) {
-      .ms-control { top: auto; left: 10px; right: auto; bottom: 10px; max-width: 92vw; border-radius: 10px; padding: 8px 10px; }
+      .ms-control { top: 10px; right: 10px; left: auto; bottom: auto; max-width: 92vw; border-radius: 10px; padding: 8px 10px; }
       .ms-control.collapsed { height: 44px; overflow: hidden; }
       .ms-control .ms-row, .ms-control h4 { display: none; }
       .ms-control.collapsed .ms-control-header + .ms-row { display: none; }
