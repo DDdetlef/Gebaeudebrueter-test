@@ -184,6 +184,7 @@ def main():
     <style>
     .leaflet-container .ms-marker:hover { transform: scale(1.15); box-shadow: 0 1px 6px rgba(0,0,0,0.35); }
     .ms-control { position: fixed; top: 10px; left: 10px; background: #fff; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; z-index: 9999; box-shadow: 0 2px 8px rgba(0,0,0,0.08); font-family: sans-serif; }
+    .ms-control h3 { margin: 0 0 6px 0; font-size: 15px; }
     .ms-control h4 { margin: 0 0 6px 0; font-size: 13px; }
     .ms-row { display:flex; gap:8px; align-items:center; margin: 6px 0; }
     .ms-row label { font-size: 12px; }
@@ -200,6 +201,7 @@ def main():
     .leaflet-marker-icon.ms-div-icon::after { display: none !important; }
     </style>
     <div class="ms-control">
+      <h3>Karte der Gebäudebrüter in Berlin</h3>
       <h4>Filter Arten</h4>
       <div class="ms-row" id="ms-species-row"></div>
       <h4>Filter Status</h4>
