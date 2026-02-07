@@ -193,9 +193,8 @@ def main():
     <div class="ms-control">
       <h4>Anzeige</h4>
       <div class="ms-row">
-        <label><input type="radio" name="ms-mode" value="both" checked> Beides</label>
-        <label><input type="radio" name="ms-mode" value="species"> Arten</label>
-        <label><input type="radio" name="ms-mode" value="status"> Status</label>
+        <label><input type="checkbox" id="ms-show-species" checked> Arten</label>
+        <label><input type="checkbox" id="ms-show-status" checked> Status</label>
       </div>
       <h4>Filter Arten</h4>
       <div class="ms-row" id="ms-species-row"></div>
@@ -207,7 +206,8 @@ def main():
     </div>
     <script>
     (function(){
-      var mode = 'both';
+      var showSpecies = true;
+      var showStatus = true;
       var SPECIES_COLORS_JS = %SPECIES_COLORS_JSON%;
       var STATUS_INFO_JS = %STATUS_INFO_JSON%;
       function applyMode(){
@@ -215,24 +215,20 @@ def main():
         els.forEach(function(el){
           var statusColor = el.getAttribute('data-statuscolor') || '#9e9e9e';
           var species = JSON.parse(el.getAttribute('data-species') || '[]');
-          if(mode === 'species'){
-            // species only: gradient fill, no border, hide badge
+          // Species fill
+          if(showSpecies){
             el.style.background = getGradient(species);
-            el.style.outline = '2px solid transparent';
-            var badge = el.querySelector('.ms-badge');
-            if(badge) badge.style.display = 'none';
-          } else if(mode === 'status'){
-            // status only: neutral fill, colored border, show badge
+          } else {
             el.style.background = '#cccccc';
+          }
+          // Status border + badge
+          var badge = el.querySelector('.ms-badge');
+          if(showStatus){
             el.style.outline = '2px solid ' + statusColor;
-            var badge = el.querySelector('.ms-badge');
             if(badge) badge.style.display = 'block';
           } else {
-            // both
-            el.style.background = getGradient(species);
-            el.style.outline = '2px solid ' + statusColor;
-            var badge = el.querySelector('.ms-badge');
-            if(badge) badge.style.display = 'block';
+            el.style.outline = '2px solid transparent';
+            if(badge) badge.style.display = 'none';
           }
         });
       }
@@ -264,7 +260,7 @@ def main():
           wrap.style.display = 'flex';
           wrap.style.alignItems = 'center';
           var cb = document.createElement('input');
-          cb.type = 'checkbox'; cb.value = name; cb.id = id; cb.className = 'ms-filter-species';
+          cb.type = 'checkbox'; cb.value = name; cb.id = id; cb.className = 'ms-filter-species'; cb.checked = true;
           var swatch = document.createElement('span');
           swatch.style.display = 'inline-block'; swatch.style.width = '12px'; swatch.style.height = '12px'; swatch.style.borderRadius = '50%'; swatch.style.margin = '0 6px'; swatch.style.background = SPECIES_COLORS_JS[name];
           wrap.appendChild(cb); wrap.appendChild(swatch); wrap.appendChild(document.createTextNode(name));
@@ -281,7 +277,7 @@ def main():
           var id = 'ms-st-' + key;
           var wrap = document.createElement('label');
           wrap.style.display = 'flex'; wrap.style.alignItems = 'center';
-          var cb = document.createElement('input'); cb.type = 'checkbox'; cb.value = key; cb.id = id; cb.className = 'ms-filter-status';
+          var cb = document.createElement('input'); cb.type = 'checkbox'; cb.value = key; cb.id = id; cb.className = 'ms-filter-status'; cb.checked = true;
           var swatch = document.createElement('span');
           swatch.style.display = 'inline-block'; swatch.style.width = '12px'; swatch.style.height = '12px'; swatch.style.borderRadius = '4px'; swatch.style.margin = '0 6px'; swatch.style.background = info.color;
           wrap.appendChild(cb); wrap.appendChild(swatch); wrap.appendChild(document.createTextNode(info.label));
@@ -291,8 +287,8 @@ def main():
       function applyFilters(){
         var speciesAll = document.getElementById('ms-species-all');
         var statusAll = document.getElementById('ms-status-all');
-        var selectedSpecies = speciesAll && speciesAll.checked ? [] : Array.from(document.querySelectorAll('.ms-filter-species:checked')).map(function(el){ return el.value; });
-        var selectedStatus = statusAll && statusAll.checked ? [] : Array.from(document.querySelectorAll('.ms-filter-status:checked')).map(function(el){ return el.value; });
+        var selectedSpecies = Array.from(document.querySelectorAll('.ms-filter-species:checked')).map(function(el){ return el.value; });
+        var selectedStatus = Array.from(document.querySelectorAll('.ms-filter-status:checked')).map(function(el){ return el.value; });
         var els = document.querySelectorAll('.ms-marker');
         els.forEach(function(el){
           var species = JSON.parse(el.getAttribute('data-species') || '[]');
@@ -313,34 +309,49 @@ def main():
         var statusAll = document.getElementById('ms-status-all');
         if(speciesAll){
           speciesAll.addEventListener('change', function(){
-            if(this.checked){
-              document.querySelectorAll('.ms-filter-species').forEach(function(el){ el.checked = false; });
-            }
+            var check = this.checked;
+            document.querySelectorAll('.ms-filter-species').forEach(function(el){ el.checked = check; });
             applyFilters();
           });
         }
         if(statusAll){
           statusAll.addEventListener('change', function(){
-            if(this.checked){
-              document.querySelectorAll('.ms-filter-status').forEach(function(el){ el.checked = false; });
-            }
+            var check = this.checked;
+            document.querySelectorAll('.ms-filter-status').forEach(function(el){ el.checked = check; });
             applyFilters();
           });
         }
-        document.querySelectorAll('.ms-filter-species, .ms-filter-status').forEach(function(el){
+        document.querySelectorAll('.ms-filter-species').forEach(function(el){
           el.addEventListener('change', applyFilters);
+          el.addEventListener('change', function(){
+            var boxes = Array.from(document.querySelectorAll('.ms-filter-species'));
+            var allChecked = boxes.every(function(b){ return b.checked; });
+            var sAll = document.getElementById('ms-species-all'); if(sAll) sAll.checked = allChecked;
+          });
+        });
+        document.querySelectorAll('.ms-filter-status').forEach(function(el){
+          el.addEventListener('change', applyFilters);
+          el.addEventListener('change', function(){
+            var boxes = Array.from(document.querySelectorAll('.ms-filter-status'));
+            var allChecked = boxes.every(function(b){ return b.checked; });
+            var stAll = document.getElementById('ms-status-all'); if(stAll) stAll.checked = allChecked;
+          });
         });
       }
       // wire controls
-      document.querySelectorAll('input[name="ms-mode"]').forEach(function(inp){
-        inp.addEventListener('change', function(){ mode = this.value; applyMode(); });
-      });
+      var showSpeciesBox = document.getElementById('ms-show-species');
+      var showStatusBox = document.getElementById('ms-show-status');
+      if(showSpeciesBox){ showSpeciesBox.addEventListener('change', function(){ showSpecies = this.checked; applyMode(); }); }
+      if(showStatusBox){ showStatusBox.addEventListener('change', function(){ showStatus = this.checked; applyMode(); }); }
       document.getElementById('ms-reset').addEventListener('click', function(){
         document.querySelectorAll('.ms-marker').forEach(function(el){ el.classList.remove('ms-hidden'); });
-        document.querySelectorAll('.ms-filter-species, .ms-filter-status').forEach(function(el){ el.checked = false; });
+        document.querySelectorAll('.ms-filter-species, .ms-filter-status').forEach(function(el){ el.checked = true; });
         var speciesAll = document.getElementById('ms-species-all'); if(speciesAll) speciesAll.checked = true;
         var statusAll = document.getElementById('ms-status-all'); if(statusAll) statusAll.checked = true;
+        var showSpeciesBox = document.getElementById('ms-show-species'); if(showSpeciesBox){ showSpeciesBox.checked = true; showSpecies = true; }
+        var showStatusBox = document.getElementById('ms-show-status'); if(showStatusBox){ showStatusBox.checked = true; showStatus = true; }
         applyMode();
+        applyFilters();
       });
       // initial pass
       buildFilters();
