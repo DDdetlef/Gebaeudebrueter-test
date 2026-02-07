@@ -1,13 +1,70 @@
-When starting from scratch:
-    clone github repository
-    copy api key into project folder (file is called api.key)
+## Overview
 
-To generate Berlin map Gebäudebrüter:
-    run scripts/nabuPageScraper.py to save all data entries from the Gebäudebrüter database in brueter.sqlite
-        option to download all (only_get_new_ids = True) or to only download new entries (only_get_new_ids = False)
-    run scripts/generateLocationForPageMap.py to generate gps coordinates using GoogleMaps and OpenStreetMap
-    run long_lat_to_map_by_species to generate map with OpenStreetMap coordinates grouped by species
-        check if row 50 is still valid as three IDs are removed from the map
+Gebäudebrüter maps for Berlin: data ingestion, geocoding, and interactive maps published via GitHub Pages. This repo now includes a v2 multi‑species marker visualization with filters and clustering.
+
+## Setup
+
+1. Clone the repository
+2. Provide API key file `api.key` in the project root (Google Maps for optional geocoding)
+3. Ensure Python environment is available (local venv recommended)
+
+## Data Fetch
+
+Run `scripts/nabuPageScraper.py` to fetch entries into `brueter.sqlite`.
+- Configure `only_get_new_ids` to fetch either all or only new entries.
+
+## Geocoding
+
+Run `scripts/generateLocationForPageMap.py` to geocode addresses.
+- Uses OpenStreetMap (Nominatim) with rate limiting
+- Optionally uses Google Maps (requires `api.key`)
+
+## Map Generation
+
+Classic species map:
+- Run `scripts/long_lat_to_map_by_species.py` to produce the species‑grouped map.
+
+Multi‑species markers (v2):
+- Run:
+
+```bash
+C:/Users/2andr/Documents/VisualStudioCode_Projekte/Gebaeudebrueter-master/.venv/Scripts/python.exe scripts/generateMultiSpeciesMap.py
+```
+
+Outputs `GebaeudebrueterMultiMarkers.html` (see Publishing below).
+
+## Filters & Logic (v2)
+
+- Species (fill) and Status (rim/badge) filters
+- Special rule + AND logic:
+  - If no species selected → show nothing
+  - If species selected and no status selected → show species matches
+  - If species and status selected → location must match both
+- Clusters rebuild on filter changes; counts/layout update accordingly
+
+## Publishing (GitHub Pages)
+
+GitHub Pages should point to the branch with `docs/` (e.g. `feature/multi-species-markers-v2` + `docs`).
+
+Publish the generated HTML by copying to `docs/`:
+
+```powershell
+Copy-Item -Path "GebaeudebrueterMultiMarkers.html" -Destination "docs/GebaeudebrueterMultiMarkers.html" -Force
+```
+
+The root `index.html` links to the current maps; `docs/index.html` provides the Pages landing page.
+
+## Repository Hygiene
+
+- Generated HTML in the repo root is ignored; `docs/` hosts published HTML.
+- Local virtual env `.venv/`, caches (`__pycache__/`), and `out/` are ignored.
+- Reports/exports and backups are excluded from VCS; see `.gitignore`.
+
+## Notes
+
+- Coordinates prefer OSM; Google is used as fallback when available.
+- Marker segments cap at 4 for readability.
+- For large updates, run `scripts/ci_publish_maps.py` to regenerate and push docs (if configured).
 
 ## Multi‑Spezies Marker Map (v2)
 

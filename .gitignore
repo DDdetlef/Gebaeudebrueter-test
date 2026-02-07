@@ -8,3 +8,13 @@ reports/
 artProJahr_202601.png
 erstbeobachtungKummuliertJahr_202601.png
 erstbeobachtungProJahr_202601.png
+# Local Python venv
+.venv/
+__pycache__/
+scripts/__pycache__/
+out/
+
+# Generated map HTML in repo root (docs/ is tracked)
+/GebaeudebrueterBerlinBySpecies.html
+/GebaeudebrueterMeldungen.html
+/GebaeudebrueterMultiMarkers.html
