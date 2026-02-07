@@ -189,7 +189,15 @@ def main():
     .ms-row label { font-size: 12px; }
     .ms-badge { display: none; }
     .ms-hidden { display: none !important; }
-    .leaflet-marker-icon.ms-div-icon { background: transparent !important; border: none !important; box-shadow: none !important; }
+    .leaflet-marker-icon.ms-div-icon {
+      background: transparent !important;
+      background-image: none !important;
+      border: none !important;
+      box-shadow: none !important;
+      overflow: visible !important;
+    }
+    .leaflet-marker-icon.ms-div-icon::before,
+    .leaflet-marker-icon.ms-div-icon::after { display: none !important; }
     </style>
     <div class="ms-control">
       <h4>Filter Arten</h4>
