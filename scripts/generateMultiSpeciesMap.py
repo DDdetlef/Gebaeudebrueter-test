@@ -197,6 +197,10 @@ def main():
         <label><input type="radio" name="ms-mode" value="species"> Arten</label>
         <label><input type="radio" name="ms-mode" value="status"> Status</label>
       </div>
+      <h4>Filter Arten</h4>
+      <div class="ms-row" id="ms-species-row"></div>
+      <h4>Filter Status</h4>
+      <div class="ms-row" id="ms-status-row"></div>
       <div class="ms-row">
         <button id="ms-reset" title="Alle Marker zeigen">Reset</button>
       </div>
@@ -204,6 +208,8 @@ def main():
     <script>
     (function(){
       var mode = 'both';
+      var SPECIES_COLORS_JS = %SPECIES_COLORS_JSON%;
+      var STATUS_INFO_JS = %STATUS_INFO_JSON%;
       function applyMode(){
         var els = document.querySelectorAll('.ms-marker');
         els.forEach(function(el){
@@ -244,19 +250,74 @@ def main():
         }
         return 'conic-gradient(' + stops.join(', ') + ')';
       }
-      var SPECIES_COLORS_JS = %SPECIES_COLORS_JSON%;
+      // build filter checkboxes
+      function buildFilters(){
+        var sRow = document.getElementById('ms-species-row');
+        Object.keys(SPECIES_COLORS_JS).forEach(function(name){
+          var id = 'ms-sp-' + name;
+          var wrap = document.createElement('label');
+          wrap.style.display = 'flex';
+          wrap.style.alignItems = 'center';
+          var cb = document.createElement('input');
+          cb.type = 'checkbox'; cb.value = name; cb.id = id; cb.className = 'ms-filter-species';
+          var swatch = document.createElement('span');
+          swatch.style.display = 'inline-block'; swatch.style.width = '12px'; swatch.style.height = '12px'; swatch.style.borderRadius = '50%'; swatch.style.margin = '0 6px'; swatch.style.background = SPECIES_COLORS_JS[name];
+          wrap.appendChild(cb); wrap.appendChild(swatch); wrap.appendChild(document.createTextNode(name));
+          sRow.appendChild(wrap);
+        });
+        var stRow = document.getElementById('ms-status-row');
+        Object.keys(STATUS_INFO_JS).forEach(function(key){
+          var info = STATUS_INFO_JS[key];
+          var id = 'ms-st-' + key;
+          var wrap = document.createElement('label');
+          wrap.style.display = 'flex'; wrap.style.alignItems = 'center';
+          var cb = document.createElement('input'); cb.type = 'checkbox'; cb.value = key; cb.id = id; cb.className = 'ms-filter-status';
+          var swatch = document.createElement('span');
+          swatch.style.display = 'inline-block'; swatch.style.width = '12px'; swatch.style.height = '12px'; swatch.style.borderRadius = '4px'; swatch.style.margin = '0 6px'; swatch.style.background = info.color;
+          wrap.appendChild(cb); wrap.appendChild(swatch); wrap.appendChild(document.createTextNode(info.label));
+          stRow.appendChild(wrap);
+        });
+      }
+      function applyFilters(){
+        var selectedSpecies = Array.from(document.querySelectorAll('.ms-filter-species:checked')).map(function(el){ return el.value; });
+        var selectedStatus = Array.from(document.querySelectorAll('.ms-filter-status:checked')).map(function(el){ return el.value; });
+        var els = document.querySelectorAll('.ms-marker');
+        els.forEach(function(el){
+          var species = JSON.parse(el.getAttribute('data-species') || '[]');
+          var statuses = JSON.parse(el.getAttribute('data-statuses') || '[]');
+          var show = true;
+          if(selectedSpecies.length){
+            // show if any selected species present in marker
+            show = species.some(function(s){ return selectedSpecies.indexOf(s) !== -1; });
+          }
+          if(show && selectedStatus.length){
+            show = statuses.some(function(st){ return selectedStatus.indexOf(st) !== -1; });
+          }
+          el.classList.toggle('ms-hidden', !show);
+        });
+      }
+      function wireFilters(){
+        document.querySelectorAll('.ms-filter-species, .ms-filter-status').forEach(function(el){
+          el.addEventListener('change', applyFilters);
+        });
+      }
       // wire controls
       document.querySelectorAll('input[name="ms-mode"]').forEach(function(inp){
         inp.addEventListener('change', function(){ mode = this.value; applyMode(); });
       });
       document.getElementById('ms-reset').addEventListener('click', function(){
         document.querySelectorAll('.ms-marker').forEach(function(el){ el.classList.remove('ms-hidden'); });
+        document.querySelectorAll('.ms-filter-species, .ms-filter-status').forEach(function(el){ el.checked = false; });
+        applyMode();
       });
       // initial pass
+      buildFilters();
+      wireFilters();
       applyMode();
     })();
     </script>
-    '''.replace('%SPECIES_COLORS_JSON%', json.dumps(SPECIES_COLORS, ensure_ascii=False))
+    '''.replace('%SPECIES_COLORS_JSON%', json.dumps(SPECIES_COLORS, ensure_ascii=False))\
+       .replace('%STATUS_INFO_JSON%', json.dumps(STATUS_INFO, ensure_ascii=False))
 
     m.get_root().html.add_child(folium.Element(controls_html))
     m.get_root().html.add_child(folium.Element('<div style="position: fixed; bottom: 0; left: 0; background: white; padding: 4px; z-index:9999">Markers: ' + str(count) + '</div>'))
