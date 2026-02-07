@@ -65,9 +65,9 @@ def species_list_from_row(row):
 
 
 def conic_gradient_for_species(species):
-    # Up to 4 segments; equal-sized
-    if not species:
-        return f"background:{NEUTRAL_FILL};"
+  # Up to 4 segments; equal-sized
+  if not species:
+    return "background: transparent;"
     n = min(len(species), 4)
     seg_angle = 360 / n
     stops = []
@@ -276,20 +276,28 @@ def main():
         els.forEach(function(el){
           var species = JSON.parse(el.getAttribute('data-species') || '[]');
           var statuses = JSON.parse(el.getAttribute('data-statuses') || '[]');
-          var show = true;
-          // Species filter: show only markers whose species set is a subset of selectedSpecies
-          if(selectedSpecies.length === 0){
-            show = false; // no species chosen → show none
-          } else {
-            show = species.length > 0 && species.every(function(s){ return selectedSpecies.indexOf(s) !== -1; });
-          }
-          // Status filter: require at least one of the selected statuses (if any selected)
+          // Intersections based rendering
+          var renderSpecies = species.filter(function(s){ return selectedSpecies.indexOf(s) !== -1; });
+          var renderStatus = statuses.filter(function(st){ return selectedStatus.indexOf(st) !== -1; });
+
+          // Determine visibility: hide when both selections empty (no species segments and no status rim)
+          var show = (renderSpecies.length > 0) || (renderStatus.length > 0);
+          el.classList.toggle('ms-hidden', !show);
+
+          // Apply species fill (only selected segments); if none, no fill
           if(show){
-            if(selectedStatus.length > 0){
-              show = statuses.some(function(st){ return selectedStatus.indexOf(st) !== -1; });
+            el.style.background = getGradient(renderSpecies);
+            // Apply status rim and badge only if any selected status present
+            var statusColor = el.getAttribute('data-statuscolor') || '#9e9e9e';
+            var badge = el.querySelector('.ms-badge');
+            if(renderStatus.length > 0){
+              el.style.outline = '2px solid ' + statusColor;
+              if(badge) badge.style.display = 'block';
+            } else {
+              el.style.outline = '2px solid transparent';
+              if(badge) badge.style.display = 'none';
             }
           }
-          el.classList.toggle('ms-hidden', !show);
         });
       }
       function wireFilters(){
@@ -339,6 +347,7 @@ def main():
       buildFilters();
       wireFilters();
       applyMode();
+      applyFilters();
     })();
     </script>
     '''.replace('%SPECIES_COLORS_JSON%', json.dumps(SPECIES_COLORS, ensure_ascii=False))\
