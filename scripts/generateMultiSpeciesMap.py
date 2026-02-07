@@ -184,7 +184,10 @@ def main():
     <style>
     .leaflet-container .ms-marker:hover { transform: scale(1.15); box-shadow: 0 1px 6px rgba(0,0,0,0.35); }
     .ms-control { position: fixed; top: 10px; left: 10px; background: #fff; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; z-index: 9999; box-shadow: 0 2px 8px rgba(0,0,0,0.08); font-family: sans-serif; }
-    .ms-control h3 { margin: 0 0 6px 0; font-size: 15px; font-weight: 700; }
+    .ms-control { position: fixed; top: 10px; left: 10px; background: #fff; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; z-index: 9999; box-shadow: 0 2px 8px rgba(0,0,0,0.08); font-family: sans-serif; max-width:340px; }
+    .ms-control-header { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+    .ms-control h3 { margin: 0 0 6px 0; font-size: 15px; font-weight: 700; display:inline-block; }
+    .ms-control-logo { max-height:44px; width:auto; margin-left:8px; flex:0 0 auto; }
     .ms-toggle { cursor: pointer; display: inline-flex; align-items: center; gap:6px; font-size:13px; color:#0b66c3; user-select: none; }
     .ms-toggle .arrow { display:inline-block; transition: transform .15s ease; }
     .ms-toggle.open .arrow { transform: rotate(90deg); }
@@ -214,7 +217,7 @@ def main():
     .leaflet-marker-icon.ms-div-icon::after { display: none !important; }
     </style>
     <div class="ms-control">
-      <h3>Karte der Gebäudebrüter in Berlin</h3>
+      <div class="ms-control-header"><h3>Karte der Gebäudebrüter in Berlin</h3><img src="images/Logo%20BezGr%20SteglitzTempelhof%20farb%20(1).jpg" alt="Logo" class="ms-control-logo" /></div>
       <div class="ms-row"><div id="ms-more-info-toggle" class="ms-toggle" title="Mehr Informationen anzeigen"><span class="arrow">►</span><span>Mehr Infos / Hilfe</span></div></div>
       <h4>Filter Arten</h4>
       <div class="ms-row" id="ms-species-row"></div>
