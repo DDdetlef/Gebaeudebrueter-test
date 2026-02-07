@@ -151,7 +151,7 @@ controls_html = '''
               <p>Diese Karte zeigt Standorte von Gebäudebrütern in Berlin an. Gebäudebrüter sind Tiere wie Mauersegler, Schwalben, Sperlinge oder Fledermäuse, die an Gebäuden leben.</p>
               <p>Die Markierungen stehen für Häuser, an denen Gebäudebrüter gefunden und gemeldet wurden.</p>
               <p>Die Informationen stammen aus der Online-Datenbank des Projekts Gebäudebrüter der <strong>NABU Bezirksgruppe Steglitz-Zehlendorf</strong>.</p>
-              <p><strong>Kennen Sie einen Nistplatz von Spatz, Schwalbe &amp; Co?</strong> Dann freuen wir uns über Ihre Meldung! Je mehr Daten wir haben, desto besser können wir die Gebäudebrüter schützen. Melden Sie Ihren Fund ganz einfach über das Online-Formular auf unserer <a href="https://berlin.nabu.de/wir-ueber-uns/bezirksgruppen/steglitz-zehlendorf/projekte/gebaeudebrueter/12400.html" title="Online-Meldeformular">Website</a>.</p>
+              <p><strong>Kennen Sie einen Nistplatz von Spatz, Schwalbe &amp; Co?</strong> Dann freuen wir uns über Ihre Meldung! Je mehr Daten wir haben, desto besser können wir die Gebäudebrüter in Berlin schützen. Melden Sie Ihren Fund ganz einfach über das Online-Formular auf unserer <a href="https://berlin.nabu.de/wir-ueber-uns/bezirksgruppen/steglitz-zehlendorf/projekte/gebaeudebrueter/12400.html" title="Online-Meldeformular">Website</a>.</p>
             </div>
             <div class="ms-modal-image">
               <img src="images/Logo%20BezGr%20SteglitzTempelhof%20farb%20(1).jpg" alt="Logo" class="ms-modal-logo-lg" />
