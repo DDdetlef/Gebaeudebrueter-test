@@ -278,8 +278,20 @@ def main():
           var st = m._ms.statuses || [];
           var speciesMatch = selectedSpecies.length ? intersection(sp, selectedSpecies).length > 0 : false;
           var statusMatch = selectedStatus.length ? intersection(st, selectedStatus).length > 0 : false;
-          // AND across groups; empty groups are not fulfilled
-          var visible = speciesMatch && statusMatch;
+          // Special rule:
+          // - If no species selected → show nothing
+          // - If species selected and no status selected → show species-only matches
+          // - Else (both selected) → AND across groups
+          var speciesSelected = selectedSpecies.length > 0;
+          var statusSelected = selectedStatus.length > 0;
+          var visible = false;
+          if(!speciesSelected){
+            visible = false;
+          } else if(speciesSelected && !statusSelected){
+            visible = speciesMatch;
+          } else {
+            visible = speciesMatch && statusMatch;
+          }
           if(visible){ toAdd.push(m); }
         }
         toAdd.forEach(function(m){ MS.cluster.addLayer(m); });
