@@ -215,7 +215,7 @@ def main():
     </style>
     <div class="ms-control">
       <h3>Karte der Gebäudebrüter in Berlin</h3>
-      <div class="ms-row"><div id="ms-more-info-toggle" class="ms-toggle" title="Mehr Informationen anzeigen"><span class="arrow">►</span><span>Mehr Infos</span></div></div>
+      <div class="ms-row"><div id="ms-more-info-toggle" class="ms-toggle" title="Mehr Informationen anzeigen"><span class="arrow">►</span><span>Mehr Infos / Hilfe</span></div></div>
       <h4>Filter Arten</h4>
       <div class="ms-row" id="ms-species-row"></div>
       <h4>Filter Status</h4>
@@ -234,12 +234,10 @@ def main():
             <h2 class="ms-modal-title">Karte der Gebäudebrüter in Berlin</h2>
             <img src="../images/Logo%20BezGr%20SteglitzTempelhof%20farb%20(1).jpg" alt="Logo Gebäudebrüterschutz NABU Bezirksgruppe Steglitz-Zehlendorf" class="ms-modal-logo" />
           </div>
-          <p>Diese Karte zeigt Standorte von Gebäudebrütern in Berlin an. Die Daten stammen aus der Online-Datenbank des Projekts Gebäudebrüterschutz der NABU Bezirksgruppe Steglitz-Zehlendorf (<a href="http://www.gebaeudebrueter-in-berlin.de/index.php" target="_blank" rel="noopener">www.gebaeudebrueter-in-berlin.de</a>).</p>
+          <h3 class="ms-modal-section-title">Karte der Gebäudebrüter in Berlin</h3>
           <h3 class="ms-modal-section-title">Wie funktioniert&#39;s?</h3>
-          <ol>
-            <li>Nutzen Sie die Filter auf der linken Seite, um die angezeigten Arten und den Status von Nachweisen (z. B. Sanierung, Kontrolle, Ersatzmaßnahmen) gezielt ein- oder auszublenden.</li>
-            <li>Klicken Sie auf einen Standort-Marker, um weitere Informationen zu den dort erfassten Arten und Maßnahmen zu erhalten.</li>
-          </ol>
+          <p>Nutzen Sie die Filter auf der linken Seite, um die angezeigten Arten und den Status von Nachweisen (z. B. Sanierung, Kontrolle, Ersatzmaßnahmen) gezielt ein- oder auszublenden.</p>
+          <p>Klicken Sie auf einen Standort-Marker, um weitere Informationen zu den dort erfassten Arten und Maßnahmen zu erhalten.</p>
         </div>
       </div>
     </div>
