@@ -192,15 +192,23 @@ def main():
     .ms-toggle .arrow { display:inline-block; transition: transform .15s ease; }
     .ms-toggle.open .arrow { transform: rotate(90deg); }
     .ms-modal { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.45); z-index:10000; display:flex; align-items:center; justify-content:center; }
-    .ms-modal-content { background: #fff; padding: 18px 22px; border-radius:10px; max-width:720px; width:calc(100% - 40px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); position:relative; }
+    .ms-modal-content { background: #fff; padding: 18px 22px; border-radius:10px; max-width:820px; width:calc(100% - 40px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); position:relative; }
     .ms-modal-close { position:absolute; top:8px; right:8px; border:none; background:transparent; font-size:18px; cursor:pointer; }
     .ms-modal-body { font-size:14px; line-height:1.6; }
-    .ms-modal-header { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; margin-bottom:10px; }
-    .ms-modal-logo { flex:0 0 auto; max-height:112px; width:auto; border-radius:4px; margin-left:12px; }
-    .ms-modal-title { margin:0; font-size:18px; font-weight:700; }
-    .ms-modal-section-title { margin:12px 0 4px 0; font-size:15px; font-weight:700; }
+    .ms-modal-header { margin-bottom:12px; }
+    .ms-modal-title { margin:0 0 6px 0; font-size:20px; font-weight:700; }
+    .ms-modal-row { display:flex; gap:18px; align-items:flex-start; }
+    .ms-modal-text { flex:1 1 60%; font-size:15px; line-height:1.5; }
+    .ms-modal-image { flex:0 0 36%; display:flex; align-items:flex-start; justify-content:flex-end; }
+    .ms-modal-logo-lg { max-height:220px; width:auto; border-radius:6px; }
+    .ms-modal-section-title { margin:14px 0 6px 0; font-size:16px; font-weight:700; }
     .ms-modal-body ol { padding-left:20px; margin:6px 0 0 0; }
-    .ms-modal-body li { margin-bottom:6px; }
+    .ms-modal-body li { margin-bottom:8px; }
+    @media (max-width: 720px) {
+      .ms-modal-row { flex-direction:column-reverse; }
+      .ms-modal-image { justify-content:flex-start; }
+      .ms-modal-logo-lg { max-height:140px; }
+    }
     .ms-control h4 { margin: 0 0 6px 0; font-size: 13px; }
     .ms-row { display:flex; gap:8px; align-items:center; margin: 6px 0; flex-wrap:wrap; }
     .ms-row label { font-size: 12px; }
@@ -239,14 +247,22 @@ def main():
         <div class="ms-modal-body">
           <div class="ms-modal-header">
             <h2 class="ms-modal-title">Karte der Gebäudebrüter in Berlin</h2>
-            <img src="images/Logo%20BezGr%20SteglitzTempelhof%20farb%20(1).jpg" alt="Logo Gebäudebrüterschutz NABU Bezirksgruppe Steglitz-Zehlendorf" class="ms-modal-logo" />
           </div>
-          <p>Diese Karte zeigt Standorte von Gebäudebrütern in Berlin an. Gebäudebrüter sind Tiere wie Mauersegler, Schwalben, Sperlinge oder Fledermäuse, die an oder in Gebäuden leben. Die Markierungen stehen für Häuser, an denen Gebäudebrüter gefunden und gemeldet wurden. Die Informationen stammen aus der Online-Datenbank des Projekts Gebäudebrüterschutz der NABU Bezirksgruppe Steglitz-Zehlendorf (<a href="http://www.gebaeudebrueter-in-berlin.de/index.php" target="_blank" rel="noopener">www.gebaeudebrueter-in-berlin.de</a>).</p>
+          <div class="ms-modal-row">
+            <div class="ms-modal-text">
+              <p>Diese Karte zeigt Standorte von Gebäudebrütern in Berlin an. Gebäudebrüter sind Tiere wie Mauersegler, Schwalben, Sperlinge oder Fledermäuse, die an oder in Gebäuden leben. Die Markierungen stehen für Häuser, an denen Gebäudebrüter gefunden und gemeldet wurden. Die Informationen stammen aus der Online-Datenbank des Projekts Gebäudebrüterschutz der NABU Bezirksgruppe Steglitz-Zehlendorf (<a href="http://www.gebaeudebrueter-in-berlin.de/index.php" target="_blank" rel="noopener">www.gebaeudebrueter-in-berlin.de</a>).</p>
+            </div>
+            <div class="ms-modal-image">
+              <img src="images/Logo%20BezGr%20SteglitzTempelhof%20farb%20(1).jpg" alt="Logo" class="ms-modal-logo-lg" />
+            </div>
+          </div>
           <h3 class="ms-modal-section-title">Wie funktioniert&#39;s?</h3>
-          <ol>
-            <li>Nutzen Sie die Filter auf der linken Seite, um die angezeigten Arten und den Status von Nachweisen (z. B. Sanierung, Kontrolle, Ersatzmaßnahmen) gezielt ein- oder auszublenden.</li>
-            <li>Klicken Sie auf einen Standort-Marker, um weitere Informationen zu den dort erfassten Arten und Maßnahmen zu erhalten.</li>
-          </ol>
+          <div class="ms-modal-text">
+            <ol>
+              <li>Nutzen Sie die Filter auf der linken Seite, um die angezeigten Arten und den Status von Nachweisen (z. B. Sanierung, Kontrolle, Ersatzmaßnahmen) gezielt ein- oder auszublenden.</li>
+              <li>Klicken Sie auf einen Standort-Marker, um weitere Informationen zu den dort erfassten Arten und Maßnahmen zu erhalten.</li>
+            </ol>
+          </div>
         </div>
       </div>
     </div>
