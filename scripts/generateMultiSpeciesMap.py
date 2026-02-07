@@ -364,7 +364,12 @@ def main():
       function applyFilters(){
         var selectedSpecies = Array.from(document.querySelectorAll('.ms-filter-species:checked')).map(function(el){ return el.value; });
         var selectedStatus = Array.from(document.querySelectorAll('.ms-filter-status:checked')).map(function(el){ return el.value; });
-        rebuildCluster(selectedSpecies, selectedStatus);
+        // Ensure cluster is ready; if not, retry shortly
+        if(!MS.ready){
+          setTimeout(function(){ rebuildCluster(selectedSpecies, selectedStatus); }, 150);
+        } else {
+          rebuildCluster(selectedSpecies, selectedStatus);
+        }
       }
       function wireFilters(){
         var speciesAll = document.getElementById('ms-species-all');
