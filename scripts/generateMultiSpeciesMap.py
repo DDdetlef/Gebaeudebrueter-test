@@ -76,6 +76,9 @@ controls_html = '''
     .ms-all-thumb { position:absolute; top:2px; left:2px; width:12px; height:12px; border-radius:50%; background:#fff; box-shadow:0 0 2px rgba(0,0,0,0.4); transition: transform .15s ease; }
     .ms-all-toggle input[type=checkbox]:checked + .ms-all-track { background:#1976d2; }
     .ms-all-toggle input[type=checkbox]:checked + .ms-all-track .ms-all-thumb { transform: translateX(16px); }
+    /* small submit button next to help */
+    .ms-submit-btn { font-size:13px; padding:6px 8px; border-radius:6px; border:1px solid transparent; background:#fff; cursor:pointer; color:#1976d2; }
+    .ms-submit-cta { display:inline-block; padding:6px 10px; border-radius:6px; border:1px solid #1976d2; background:#1976d2; color:#fff; text-decoration:none; }
     .ms-badge { display: none; }
     .ms-hidden { display: none !important; }
     .leaflet-marker-icon.ms-div-icon {
@@ -105,7 +108,10 @@ controls_html = '''
           <button id="ms-open-sheet" class="ms-open-sheet-btn" title="Filter öffnen">Filter</button>
         </div>
       </div>
-      <div class="ms-row"><div id="ms-more-info-toggle" class="ms-toggle" title="Mehr Informationen anzeigen"><span class="arrow">►</span><span>ⓘ ?</span></div></div>
+      <div class="ms-row">
+        <div id="ms-more-info-toggle" class="ms-toggle" title="Mehr Informationen anzeigen"><span class="arrow">►</span><span>ⓘ ?</span></div>
+        <button id="ms-submit-btn" class="ms-submit-btn" title="Nistplatz melden">Nistplatz melden</button>
+      </div>
       <div class="desktop-only">
         <div class="ms-section">
           <h4>Filter Arten</h4>
@@ -166,6 +172,22 @@ controls_html = '''
               <li>Nutzen Sie die Filter auf der linken Seite, um die angezeigten Arten und den Status von Nachweisen (z. B. Sanierung, Kontrolle, Ersatzmaßnahmen) gezielt ein- oder auszublenden.</li>
               <li>Klicken Sie auf einen Standort-Marker, um weitere Informationen zu den dort erfassten Arten und Maßnahmen zu erhalten.</li>
             </ol>
+          </div>
+          <!-- Submit modal (triggered from control button) -->
+          <div id="ms-submit-modal" class="ms-modal" style="display:none;">
+            <div class="ms-modal-content">
+              <button id="ms-submit-close" class="ms-modal-close" aria-label="Schließen">✕</button>
+              <div class="ms-modal-body">
+                <div class="ms-modal-text">
+                  <p><strong>Kennen Sie einen Nistplatz von Spatz, Schwalbe &amp; Co?</strong></p>
+                  <p>Dann freuen wir uns über Ihre Meldung! Je mehr Daten wir haben, desto besser können wir die Gebäudebrüter in Berlin schützen.</p>
+                  <div style="margin-top:12px; display:flex; gap:8px;">
+                    <a id="ms-submit-continue" href="https://berlin.nabu.de/wir-ueber-uns/bezirksgruppen/steglitz-zehlendorf/projekte/gebaeudebrueter/12400.html" target="_blank" rel="noopener" class="ms-submit-cta">Weiter zum Online-Formular</a>
+                    <button id="ms-submit-cancel" class="ms-submit-btn">Schließen</button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -232,6 +254,21 @@ controls_html = '''
         if(togSheet){ togSheet.addEventListener('click', openModal); }
         if(closeBtn){ closeBtn.addEventListener('click', closeModal); }
         if(modal){ modal.addEventListener('click', function(ev){ if(ev.target === modal){ closeModal(); } }); }
+      })();
+
+      // Submit modal handlers (open submit modal from control button)
+      (function(){
+        var submitBtn = document.getElementById('ms-submit-btn');
+        var submitModal = document.getElementById('ms-submit-modal');
+        var submitClose = document.getElementById('ms-submit-close');
+        var submitCancel = document.getElementById('ms-submit-cancel');
+        var sheet = document.getElementById('ms-bottom-sheet');
+        function openSubmit(ev){ if(ev){ ev.preventDefault(); } if(sheet){ sheet.classList.remove('open'); } if(submitModal){ submitModal.style.display = 'flex'; } }
+        function closeSubmit(){ if(submitModal){ submitModal.style.display = 'none'; } }
+        if(submitBtn){ submitBtn.addEventListener('click', openSubmit); }
+        if(submitClose){ submitClose.addEventListener('click', closeSubmit); }
+        if(submitCancel){ submitCancel.addEventListener('click', closeSubmit); }
+        if(submitModal){ submitModal.addEventListener('click', function(ev){ if(ev.target === submitModal){ closeSubmit(); } }); }
       })();
       function intersection(a, b){ return a.filter(function(x){ return b.indexOf(x) !== -1; }); }
       function computeGradient(species){
