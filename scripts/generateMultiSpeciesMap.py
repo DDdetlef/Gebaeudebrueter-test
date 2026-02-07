@@ -184,10 +184,10 @@ def main():
     <style>
     .leaflet-container .ms-marker:hover { transform: scale(1.15); box-shadow: 0 1px 6px rgba(0,0,0,0.35); }
     .ms-control { position: fixed; top: 10px; left: 10px; background: #fff; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; z-index: 9999; box-shadow: 0 2px 8px rgba(0,0,0,0.08); font-family: sans-serif; }
-    .ms-control { position: fixed; top: 10px; left: 10px; background: #fff; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; z-index: 9999; box-shadow: 0 2px 8px rgba(0,0,0,0.08); font-family: sans-serif; max-width:340px; }
+    .ms-control { position: fixed; top: 10px; left: 10px; background: #fff; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; z-index: 9999; box-shadow: 0 2px 8px rgba(0,0,0,0.08); font-family: sans-serif; max-width:380px; max-height:80vh; overflow:auto; box-sizing:border-box; }
     .ms-control-header { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
     .ms-control h3 { margin: 0 0 6px 0; font-size: 15px; font-weight: 700; display:inline-block; }
-    .ms-control-logo { max-height:44px; width:auto; margin-left:8px; flex:0 0 auto; }
+    .ms-control-logo { max-height: clamp(40px, 12vh, 160px); max-width:40%; width:auto; height:auto; margin-left:8px; flex:0 0 auto; }
     .ms-toggle { cursor: pointer; display: inline-flex; align-items: center; gap:6px; font-size:13px; color:#0b66c3; user-select: none; }
     .ms-toggle .arrow { display:inline-block; transition: transform .15s ease; }
     .ms-toggle.open .arrow { transform: rotate(90deg); }
@@ -202,7 +202,7 @@ def main():
     .ms-modal-body ol { padding-left:20px; margin:6px 0 0 0; }
     .ms-modal-body li { margin-bottom:6px; }
     .ms-control h4 { margin: 0 0 6px 0; font-size: 13px; }
-    .ms-row { display:flex; gap:8px; align-items:center; margin: 6px 0; }
+    .ms-row { display:flex; gap:8px; align-items:center; margin: 6px 0; flex-wrap:wrap; }
     .ms-row label { font-size: 12px; }
     .ms-badge { display: none; }
     .ms-hidden { display: none !important; }
