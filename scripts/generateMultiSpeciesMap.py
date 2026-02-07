@@ -215,6 +215,10 @@ def main():
     }
     .leaflet-marker-icon.ms-div-icon::before,
     .leaflet-marker-icon.ms-div-icon::after { display: none !important; }
+    @media (max-width: 420px) {
+      .ms-control-logo { display: none !important; }
+      .ms-control { max-width: 92vw; }
+    }
     </style>
     <div class="ms-control">
       <div class="ms-control-header"><h3>Karte der Gebäudebrüter in Berlin</h3><img src="images/Logo%20BezGr%20SteglitzTempelhof%20farb%20(1).jpg" alt="Logo" class="ms-control-logo" /></div>
