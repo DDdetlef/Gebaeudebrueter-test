@@ -185,6 +185,8 @@ def main():
     .leaflet-container .ms-marker:hover { transform: scale(1.15); box-shadow: 0 1px 6px rgba(0,0,0,0.35); }
     .ms-control { position: fixed; top: 10px; left: 10px; background: #fff; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; z-index: 9999; box-shadow: 0 2px 8px rgba(0,0,0,0.08); font-family: sans-serif; }
     .ms-control h3 { margin: 0 0 6px 0; font-size: 15px; }
+    .ms-info { display: none; margin:6px 0 8px 0; font-size:12px; max-width:280px; }
+    .ms-info a { color: #0b66c3; text-decoration: underline; }
     .ms-control h4 { margin: 0 0 6px 0; font-size: 13px; }
     .ms-row { display:flex; gap:8px; align-items:center; margin: 6px 0; }
     .ms-row label { font-size: 12px; }
@@ -202,6 +204,12 @@ def main():
     </style>
     <div class="ms-control">
       <h3>Karte der Gebäudebrüter in Berlin</h3>
+      <div><a href="#" id="ms-more-info">Mehr Infos hier</a></div>
+      <div class="ms-info" id="ms-more-info-popup">
+        <p>Diese Karte zeigt Standorte von Gebäudebrütern in der Stadt, die in der Online-Datenbank des NABU-Landesverbands, AG Gebäudebrüterschutz erfasst wurden (zur Online-Datenbank: <a href="http://www.gebaeudebrueter-in-berlin.de/index.php" target="_blank" rel="noopener">http://www.gebaeudebrueter-in-berlin.de/index.php</a>).</p>
+        <p>Nutzen Sie die Filter auf der linken Seite, um die angezeigten Arten und den Status von Nachweisen (z. B. Sanierung, Kontrolle, Ersatzmaßnahmen) gezielt ein- oder auszublenden.</p>
+        <p>Klicken Sie auf einen Standort-Marker, um weitere Informationen zu den dort erfassten Arten und Maßnahmen zu erhalten.</p>
+      </div>
       <h4>Filter Arten</h4>
       <div class="ms-row" id="ms-species-row"></div>
       <h4>Filter Status</h4>
@@ -247,6 +255,15 @@ def main():
         });
         MS.ready = true;
       }
+      // More info popup toggle
+      document.addEventListener('click', function(ev){
+        var t = ev.target || ev.srcElement;
+        if(t && t.id === 'ms-more-info'){
+          ev.preventDefault();
+          var p = document.getElementById('ms-more-info-popup');
+          if(p){ p.style.display = (p.style.display === 'block') ? 'none' : 'block'; }
+        }
+      });
       function intersection(a, b){ return a.filter(function(x){ return b.indexOf(x) !== -1; }); }
       function computeGradient(species){
         if(!species || !species.length){ return '#cccccc'; }
