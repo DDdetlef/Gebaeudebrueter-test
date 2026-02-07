@@ -187,7 +187,6 @@ def main():
     .ms-control { position: fixed; top: 10px; left: 10px; background: #fff; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; z-index: 9999; box-shadow: 0 2px 8px rgba(0,0,0,0.08); font-family: sans-serif; max-width:380px; max-height:80vh; overflow:auto; box-sizing:border-box; }
     .ms-control-header { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
     .ms-control h3 { margin: 0 0 6px 0; font-size: 15px; font-weight: 700; display:inline-block; }
-    .ms-control-logo { max-height: clamp(40px, 12vh, 160px); max-width:40%; width:auto; height:auto; margin-left:8px; flex:0 0 auto; }
     .ms-toggle { cursor: pointer; display: inline-flex; align-items: center; gap:6px; font-size:13px; color:#0b66c3; user-select: none; }
     .ms-toggle .arrow { display:inline-block; transition: transform .15s ease; }
     .ms-toggle.open .arrow { transform: rotate(90deg); }
@@ -195,9 +194,9 @@ def main():
     .ms-modal-content { background: #fff; padding: 18px 22px; border-radius:10px; max-width:700px; width:calc(100% - 40px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); position:relative; }
     .ms-modal-close { position:absolute; top:8px; right:8px; border:none; background:transparent; font-size:18px; cursor:pointer; }
     .ms-modal-body { font-size:14px; line-height:1.6; }
-    .ms-modal-header { margin-bottom:12px; }
+    .ms-modal-header { margin-bottom:8px; }
     .ms-modal-title { margin:0 0 6px 0; font-size:20px; font-weight:700; }
-    .ms-modal-row { display:flex; gap:16px; align-items:flex-start; }
+    .ms-modal-row { display:flex; gap:16px; align-items:flex-start; margin-top:4px; }
     .ms-modal-text { flex:1 1 68%; font-size:15px; line-height:1.5; }
     .ms-modal-image { flex:0 0 28%; display:flex; align-items:flex-start; justify-content:flex-end; }
     .ms-modal-logo-lg { max-height:220px; width:auto; border-radius:6px; }
@@ -224,12 +223,11 @@ def main():
     .leaflet-marker-icon.ms-div-icon::before,
     .leaflet-marker-icon.ms-div-icon::after { display: none !important; }
     @media (max-width: 420px) {
-      .ms-control-logo { display: none !important; }
       .ms-control { max-width: 92vw; }
     }
     </style>
     <div class="ms-control">
-      <div class="ms-control-header"><h3>Karte der Gebäudebrüter in Berlin</h3><img src="images/Logo%20BezGr%20SteglitzTempelhof%20farb%20(1).jpg" alt="Logo" class="ms-control-logo" /></div>
+      <div class="ms-control-header"><h3>Karte der Gebäudebrüter in Berlin</h3></div>
       <div class="ms-row"><div id="ms-more-info-toggle" class="ms-toggle" title="Mehr Informationen anzeigen"><span class="arrow">►</span><span>Mehr Infos / Hilfe</span></div></div>
       <h4>Filter Arten</h4>
       <div class="ms-row" id="ms-species-row"></div>
@@ -251,6 +249,7 @@ def main():
           <div class="ms-modal-row">
             <div class="ms-modal-text">
               <p>Diese Karte zeigt Standorte von Gebäudebrütern in Berlin an. Gebäudebrüter sind Tiere wie Mauersegler, Schwalben, Sperlinge oder Fledermäuse, die an oder in Gebäuden leben. Die Markierungen stehen für Häuser, an denen Gebäudebrüter gefunden und gemeldet wurden. Die Informationen stammen aus der Online-Datenbank des Projekts Gebäudebrüterschutz der NABU Bezirksgruppe Steglitz-Zehlendorf (<a href="http://www.gebaeudebrueter-in-berlin.de/index.php" target="_blank" rel="noopener">www.gebaeudebrueter-in-berlin.de</a>).</p>
+              <p><strong>NABU Bezirksgruppe Steglitz-Zehlendorf</strong></p>
             </div>
             <div class="ms-modal-image">
               <img src="images/Logo%20BezGr%20SteglitzTempelhof%20farb%20(1).jpg" alt="Logo" class="ms-modal-logo-lg" />
@@ -278,6 +277,10 @@ def main():
           var mapVarName = Object.keys(window).find(function(k){ return /^map_/.test(k); });
           var map = mapVarName ? window[mapVarName] : null;
           if(!map){ return setTimeout(tryResolve, 150); }
+          // ensure zoom control is visible at the map edge
+          if(map.zoomControl && typeof map.zoomControl.setPosition === 'function'){
+            map.zoomControl.setPosition('bottomright');
+          }
           var cluster = null;
           map.eachLayer(function(l){ if(l instanceof L.MarkerClusterGroup){ cluster = l; } });
           if(!cluster){ return setTimeout(tryResolve, 150); }
