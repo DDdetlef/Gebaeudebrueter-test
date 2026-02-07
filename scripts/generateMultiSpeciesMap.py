@@ -188,8 +188,10 @@ def main():
     .ms-toggle { cursor: pointer; display: inline-flex; align-items: center; gap:6px; font-size:13px; color:#0b66c3; user-select: none; }
     .ms-toggle .arrow { display:inline-block; transition: transform .15s ease; }
     .ms-toggle.open .arrow { transform: rotate(90deg); }
-    .ms-info { display: none; margin:6px 0 8px 0; font-size:12px; width:100%; box-sizing:border-box; }
-    .ms-info a { color: #0b66c3; text-decoration: underline; }
+    .ms-modal { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.45); z-index:10000; display:flex; align-items:center; justify-content:center; }
+    .ms-modal-content { background: #fff; padding: 14px 16px; border-radius:8px; max-width:640px; width:calc(100% - 40px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); position:relative; }
+    .ms-modal-close { position:absolute; top:8px; right:8px; border:none; background:transparent; font-size:18px; cursor:pointer; }
+    .ms-modal-body { font-size:13px; line-height:1.4; }
     .ms-control h4 { margin: 0 0 6px 0; font-size: 13px; }
     .ms-row { display:flex; gap:8px; align-items:center; margin: 6px 0; }
     .ms-row label { font-size: 12px; }
@@ -208,11 +210,6 @@ def main():
     <div class="ms-control">
       <h3>Karte der Gebäudebrüter in Berlin</h3>
       <div class="ms-row"><div id="ms-more-info-toggle" class="ms-toggle" title="Mehr Informationen anzeigen"><span class="arrow">►</span><span>Mehr Infos</span></div></div>
-      <div class="ms-info" id="ms-more-info-popup">
-        <p>Diese Karte zeigt Standorte von Gebäudebrütern in der Stadt, die in der Online-Datenbank des NABU-Landesverbands, AG Gebäudebrüterschutz erfasst wurden (zur Online-Datenbank: <a href="http://www.gebaeudebrueter-in-berlin.de/index.php" target="_blank" rel="noopener">http://www.gebaeudebrueter-in-berlin.de/index.php</a>).</p>
-        <p>Nutzen Sie die Filter auf der linken Seite, um die angezeigten Arten und den Status von Nachweisen (z. B. Sanierung, Kontrolle, Ersatzmaßnahmen) gezielt ein- oder auszublenden.</p>
-        <p>Klicken Sie auf einen Standort-Marker, um weitere Informationen zu den dort erfassten Arten und Maßnahmen zu erhalten.</p>
-      </div>
       <h4>Filter Arten</h4>
       <div class="ms-row" id="ms-species-row"></div>
       <h4>Filter Status</h4>
@@ -220,6 +217,19 @@ def main():
       <div class="ms-row">
         <button id="ms-reset" title="Alle Marker zeigen">Reset</button>
       </div>
+    </div>
+
+    <!-- Info modal (separate from legend) -->
+    <div id="ms-info-modal" class="ms-modal" style="display:none;">
+      <div class="ms-modal-content">
+        <button id="ms-info-close" class="ms-modal-close" aria-label="Schließen">✕</button>
+        <div class="ms-modal-body">
+          <p>Diese Karte zeigt Standorte von Gebäudebrütern in der Stadt, die in der Online-Datenbank des NABU-Landesverbands, AG Gebäudebrüterschutz erfasst wurden (zur Online-Datenbank: <a href="http://www.gebaeudebrueter-in-berlin.de/index.php" target="_blank" rel="noopener">http://www.gebaeudebrueter-in-berlin.de/index.php</a>).</p>
+          <p>Nutzen Sie die Filter auf der linken Seite, um die angezeigten Arten und den Status von Nachweisen (z. B. Sanierung, Kontrolle, Ersatzmaßnahmen) gezielt ein- oder auszublenden.</p>
+          <p>Klicken Sie auf einen Standort-Marker, um weitere Informationen zu den dort erfassten Arten und Maßnahmen zu erhalten.</p>
+        </div>
+      </div>
+    </div>
     </div>
     <script>
     (function(){
@@ -258,12 +268,15 @@ def main():
         });
         MS.ready = true;
         }
-        // More info popup toggle (arrow)
+        // More info modal toggle
         (function(){
           var tog = document.getElementById('ms-more-info-toggle');
-          var popup = document.getElementById('ms-more-info-popup');
-          if(tog && popup){
-            tog.addEventListener('click', function(ev){ ev.preventDefault(); var open = popup.style.display === 'block'; popup.style.display = open ? 'none' : 'block'; tog.classList.toggle('open', !open); });
+          var modal = document.getElementById('ms-info-modal');
+          var closeBtn = document.getElementById('ms-info-close');
+          if(tog && modal){
+            tog.addEventListener('click', function(ev){ ev.preventDefault(); modal.style.display = 'flex'; tog.classList.add('open'); });
+            if(closeBtn){ closeBtn.addEventListener('click', function(){ modal.style.display = 'none'; tog.classList.remove('open'); }); }
+            modal.addEventListener('click', function(ev){ if(ev.target === modal){ modal.style.display = 'none'; tog.classList.remove('open'); } });
           }
         })();
       function intersection(a, b){ return a.filter(function(x){ return b.indexOf(x) !== -1; }); }
