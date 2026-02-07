@@ -377,7 +377,17 @@ controls_html = '''
         }
       });
       // reset button
-      document.addEventListener('click', function(ev){ if(ev.target && ev.target.id === 'ms-reset'){ document.querySelectorAll('.ms-filter-species, .ms-filter-status').forEach(function(el){ el.checked = true; }); var selectedSpecies = Object.keys(SPECIES_COLORS_JS); var selectedStatus = Object.keys(STATUS_INFO_JS); rebuildCluster(selectedSpecies, selectedStatus); } });
+      document.addEventListener('click', function(ev){
+        if(ev.target && ev.target.id === 'ms-reset'){
+          // re-activate all species/status checkboxes
+          document.querySelectorAll('.ms-filter-species, .ms-filter-status').forEach(function(el){ el.checked = true; });
+          // re-activate "Alle" toggles in desktop + sheet
+          document.querySelectorAll('#ms-species-all, #ms-species-all-sheet, #ms-status-all, #ms-status-all-sheet').forEach(function(el){ el.checked = true; });
+          var selectedSpecies = Object.keys(SPECIES_COLORS_JS);
+          var selectedStatus = Object.keys(STATUS_INFO_JS);
+          rebuildCluster(selectedSpecies, selectedStatus);
+        }
+      });
       // close bottom sheet when tapping backdrop
       (function(){
         var sheet = document.getElementById('ms-bottom-sheet');
