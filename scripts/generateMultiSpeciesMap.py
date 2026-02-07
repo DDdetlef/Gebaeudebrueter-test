@@ -162,10 +162,7 @@ controls_html = '''
               <img src="images/Logo%20BezGr%20SteglitzTempelhof%20farb%20(1).jpg" alt="Logo" class="ms-modal-logo-lg" />
             </div>
           </div>
-          <div class="ms-modal-text">
-            <p><strong>Kennen Sie einen Nistplatz von Spatz, Schwalbe &amp; Co?</strong> Dann freuen wir uns über Ihre Meldung! Je mehr Daten wir haben, desto besser können wir die Gebäudebrüter in Berlin schützen. Melden Sie Ihren Fund ganz einfach über das Online-Formular auf unserer Website.</p>
-            <p><a href="https://berlin.nabu.de/wir-ueber-uns/bezirksgruppen/steglitz-zehlendorf/projekte/gebaeudebrueter/12400.html" title="Online-Meldeformular" style="display:inline-block; margin-top:6px; padding:6px 10px; border-radius:6px; border:1px solid #1976d2; background:#1976d2; color:#fff; text-decoration:none; font-size:13px;">Nistplatz melden</a></p>
-          </div>
+          
           <h3 class="ms-modal-section-title">Tipps für die Nutzung der Karte</h3>
           <div class="ms-modal-text">
             <ol>
