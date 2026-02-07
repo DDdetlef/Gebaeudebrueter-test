@@ -184,11 +184,11 @@ def main():
     <style>
     .leaflet-container .ms-marker:hover { transform: scale(1.15); box-shadow: 0 1px 6px rgba(0,0,0,0.35); }
     /* Desktop control */
-    .ms-control { position: fixed; top: 10px; right: 10px; left: auto; background: #fff; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; z-index: 9999; box-shadow: 0 2px 8px rgba(0,0,0,0.08); font-family: sans-serif; max-width:380px; max-height:80vh; overflow:auto; box-sizing:border-box; }
+    .ms-control { position: fixed; top: 10px; right: 10px; left: auto; background: #fff; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; z-index: 10002; box-shadow: 0 2px 8px rgba(0,0,0,0.08); font-family: sans-serif; max-width:380px; max-height:80vh; overflow:auto; box-sizing:border-box; }
     .ms-control.collapsed { height: 44px; overflow: hidden; }
     .ms-control-header { display:flex; align-items:center; justify-content:space-between; gap:8px; }
     .ms-control h3 { margin: 0 0 6px 0; font-size: 15px; font-weight: 700; display:inline-block; }
-    .ms-collapse-btn { background: transparent; border: none; font-size: 18px; padding: 6px; cursor: pointer; line-height: 1; position: absolute; top: 6px; right: 6px; z-index: 10001; }
+    .ms-collapse-btn { background: transparent; border: none; font-size: 18px; padding: 6px; cursor: pointer; line-height: 1; position: absolute; top: 6px; right: 6px; z-index: 10003; touch-action: manipulation; -webkit-tap-highlight-color: transparent; pointer-events: auto; }
     .ms-toggle { cursor: pointer; display: inline-flex; align-items: center; gap:6px; font-size:13px; color:#0b66c3; user-select: none; }
     .ms-toggle .arrow { display:inline-block; transition: transform .15s ease; }
     .ms-toggle.open .arrow { transform: rotate(90deg); }
@@ -520,8 +520,10 @@ def main():
           if(collapsed){ ctrl.classList.add('collapsed'); btn.setAttribute('aria-expanded','false'); }
           else { ctrl.classList.remove('collapsed'); btn.setAttribute('aria-expanded','true'); }
         }
-        // toggle and persist
-        btn.addEventListener('click', function(ev){ ev.preventDefault(); var cur = ctrl.classList.contains('collapsed'); setCollapsed(!cur); try{ localStorage.setItem('msControlCollapsed', !cur ? '1' : '0'); }catch(e){} });
+        // toggle and persist (support click + touchstart)
+        function msToggleHandler(ev){ ev.preventDefault(); ev.stopPropagation(); var cur = ctrl.classList.contains('collapsed'); setCollapsed(!cur); try{ localStorage.setItem('msControlCollapsed', !cur ? '1' : '0'); }catch(e){} }
+        btn.addEventListener('click', msToggleHandler);
+        btn.addEventListener('touchstart', msToggleHandler, {passive:false});
         // initialize: collapse on narrow screens unless user preference stored
         try{
           var pref = localStorage.getItem('msControlCollapsed');
