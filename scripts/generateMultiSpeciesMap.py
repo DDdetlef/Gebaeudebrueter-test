@@ -203,6 +203,87 @@ def main():
     (function(){
       var SPECIES_COLORS_JS = %SPECIES_COLORS_JSON%;
       var STATUS_INFO_JS = %STATUS_INFO_JSON%;
+      // Cluster-aware filtering support
+      var MS = { map:null, cluster:null, markers:[], ready:false };
+      function resolveMapAndCluster(cb){
+        function tryResolve(){
+          var mapVarName = Object.keys(window).find(function(k){ return /^map_/.test(k); });
+          var map = mapVarName ? window[mapVarName] : null;
+          if(!map){ return setTimeout(tryResolve, 150); }
+          var cluster = null;
+          map.eachLayer(function(l){ if(l instanceof L.MarkerClusterGroup){ cluster = l; } });
+          if(!cluster){ return setTimeout(tryResolve, 150); }
+          cb(map, cluster);
+        }
+        tryResolve();
+      }
+      function parseMetaFromIconHtml(html){
+        var temp = document.createElement('div'); temp.innerHTML = (html||'').trim();
+        var el = temp.querySelector('.ms-marker');
+        var species = []; var statuses = []; var statusColor = '#9e9e9e';
+        if(el){
+          try{ species = JSON.parse(el.getAttribute('data-species')||'[]'); }catch(e){}
+          try{ statuses = JSON.parse(el.getAttribute('data-statuses')||'[]'); }catch(e){}
+          statusColor = el.getAttribute('data-statuscolor') || '#9e9e9e';
+        }
+        return { species: species, statuses: statuses, statusColor: statusColor };
+      }
+      function initMarkers(){
+        MS.markers = MS.cluster.getLayers();
+        MS.markers.forEach(function(m){
+          var html = (m.options && m.options.icon && m.options.icon.options && m.options.icon.options.html) || '';
+          m._ms = parseMetaFromIconHtml(html);
+        });
+        MS.ready = true;
+      }
+      function intersection(a, b){ return a.filter(function(x){ return b.indexOf(x) !== -1; }); }
+      function computeGradient(species){
+        if(!species || !species.length){ return '#cccccc'; }
+        var n = Math.min(species.length, 4);
+        var seg = 360 / n;
+        var stops = [];
+        for(var i=0;i<n;i++){
+          var sp = species[i];
+          var color = SPECIES_COLORS_JS[sp] || '#9e9e9e';
+          var start = (i*seg).toFixed(2);
+          var end = ((i+1)*seg).toFixed(2);
+          stops.push(color + ' ' + start + 'deg ' + end + 'deg');
+        }
+        return 'conic-gradient(' + stops.join(', ') + ')';
+      }
+      function applyVisualsToMarker(m, selectedSpecies, selectedStatus){
+        var sp = m._ms.species || [];
+        var st = m._ms.statuses || [];
+        var spSel = selectedSpecies.length ? intersection(sp, selectedSpecies) : [];
+        var el = m._icon;
+        if(el){
+          el.style.background = computeGradient(spSel);
+          var stSel = selectedStatus.length ? intersection(st, selectedStatus) : [];
+          var color = 'transparent';
+          if(stSel.length){
+            var key = stSel[0];
+            color = (STATUS_INFO_JS[key] && STATUS_INFO_JS[key].color) || (m._ms.statusColor || '#9e9e9e');
+          }
+          el.style.outline = '2px solid ' + color;
+          var badge = el.querySelector('.ms-badge'); if(badge){ badge.style.display = stSel.length ? 'block' : 'none'; badge.style.background = color; }
+        }
+      }
+      function rebuildCluster(selectedSpecies, selectedStatus){
+        if(!MS.ready){ return; }
+        MS.cluster.clearLayers();
+        var toAdd = [];
+        for(var i=0;i<MS.markers.length;i++){
+          var m = MS.markers[i];
+          var sp = m._ms.species || [];
+          var st = m._ms.statuses || [];
+          var speciesMatch = selectedSpecies.length ? intersection(sp, selectedSpecies).length > 0 : false;
+          var statusMatch = selectedStatus.length ? intersection(st, selectedStatus).length > 0 : false;
+          var visible = speciesMatch || statusMatch; // OR across groups; empty groups not fulfilled
+          if(visible){ toAdd.push(m); }
+        }
+        toAdd.forEach(function(m){ MS.cluster.addLayer(m); });
+        setTimeout(function(){ MS.cluster.getLayers().forEach(function(m){ applyVisualsToMarker(m, selectedSpecies, selectedStatus); }); }, 75);
+      }
       function applyMode(){
         var els = document.querySelectorAll('.ms-marker');
         els.forEach(function(el){
@@ -268,37 +349,9 @@ def main():
         });
       }
       function applyFilters(){
-        var speciesAll = document.getElementById('ms-species-all');
-        var statusAll = document.getElementById('ms-status-all');
         var selectedSpecies = Array.from(document.querySelectorAll('.ms-filter-species:checked')).map(function(el){ return el.value; });
         var selectedStatus = Array.from(document.querySelectorAll('.ms-filter-status:checked')).map(function(el){ return el.value; });
-        var els = document.querySelectorAll('.ms-marker');
-        els.forEach(function(el){
-          var species = JSON.parse(el.getAttribute('data-species') || '[]');
-          var statuses = JSON.parse(el.getAttribute('data-statuses') || '[]');
-          // Intersections based rendering
-          var renderSpecies = species.filter(function(s){ return selectedSpecies.indexOf(s) !== -1; });
-          var renderStatus = statuses.filter(function(st){ return selectedStatus.indexOf(st) !== -1; });
-
-          // Determine visibility: hide when both selections empty (no species segments and no status rim)
-          var show = (renderSpecies.length > 0) || (renderStatus.length > 0);
-          el.classList.toggle('ms-hidden', !show);
-
-          // Apply species fill (only selected segments); if none, no fill
-          if(show){
-            el.style.background = getGradient(renderSpecies);
-            // Apply status rim and badge only if any selected status present
-            var statusColor = el.getAttribute('data-statuscolor') || '#9e9e9e';
-            var badge = el.querySelector('.ms-badge');
-            if(renderStatus.length > 0){
-              el.style.outline = '2px solid ' + statusColor;
-              if(badge) badge.style.display = 'block';
-            } else {
-              el.style.outline = '2px solid transparent';
-              if(badge) badge.style.display = 'none';
-            }
-          }
-        });
+        rebuildCluster(selectedSpecies, selectedStatus);
       }
       function wireFilters(){
         var speciesAll = document.getElementById('ms-species-all');
@@ -336,18 +389,22 @@ def main():
       }
       // wire controls
       document.getElementById('ms-reset').addEventListener('click', function(){
-        document.querySelectorAll('.ms-marker').forEach(function(el){ el.classList.remove('ms-hidden'); });
         document.querySelectorAll('.ms-filter-species, .ms-filter-status').forEach(function(el){ el.checked = true; });
         var speciesAll = document.getElementById('ms-species-all'); if(speciesAll) speciesAll.checked = true;
         var statusAll = document.getElementById('ms-status-all'); if(statusAll) statusAll.checked = true;
-        applyMode();
-        applyFilters();
+        var selectedSpecies = Object.keys(SPECIES_COLORS_JS);
+        var selectedStatus = Object.keys(STATUS_INFO_JS);
+        rebuildCluster(selectedSpecies, selectedStatus);
       });
       // initial pass
+      resolveMapAndCluster(function(map, cluster){ MS.map = map; MS.cluster = cluster; initMarkers(); });
       buildFilters();
       wireFilters();
-      applyMode();
-      applyFilters();
+      setTimeout(function(){
+        var selectedSpecies = Object.keys(SPECIES_COLORS_JS);
+        var selectedStatus = Object.keys(STATUS_INFO_JS);
+        rebuildCluster(selectedSpecies, selectedStatus);
+      }, 250);
     })();
     </script>
     '''.replace('%SPECIES_COLORS_JSON%', json.dumps(SPECIES_COLORS, ensure_ascii=False))\
