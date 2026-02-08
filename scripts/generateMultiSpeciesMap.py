@@ -564,12 +564,13 @@ def main():
   for r in rows:
     lat = None
     lon = None
-    if r['osm_latitude'] is not None and str(r['osm_latitude']) != 'None':
-      lat = r['osm_latitude']
-      lon = r['osm_longitude']
-    elif r['google_latitude'] is not None and str(r['google_latitude']) != 'None':
+    # prefer Google coordinates when available, fall back to OSM
+    if r['google_latitude'] is not None and str(r['google_latitude']) != 'None':
       lat = r['google_latitude']
       lon = r['google_longitude']
+    elif r['osm_latitude'] is not None and str(r['osm_latitude']) != 'None':
+      lat = r['osm_latitude']
+      lon = r['osm_longitude']
     if lat is None or lon is None:
       continue
     try:
