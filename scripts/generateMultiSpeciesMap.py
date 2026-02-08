@@ -156,6 +156,36 @@ controls_html = '''
     .ms-control button { min-height: 36px; }
     .ms-badge { display: none; }
     .ms-hidden { display: none !important; }
+
+    /* Elegant button styles for filter controls */
+    #ms-apply-desktop, #ms-apply-filters {
+      font-size: 14px;
+      padding: 8px 14px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      background: var(--ms-accent);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(25,118,210,0.12);
+      cursor: pointer;
+      transition: transform .08s ease, box-shadow .12s ease, opacity .12s ease;
+      min-width: 120px;
+    }
+    #ms-apply-desktop:hover, #ms-apply-filters:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(25,118,210,0.14); }
+    #ms-reset {
+      font-size: 13px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--ms-accent);
+      border: 1px solid rgba(25,118,210,0.14);
+      cursor: pointer;
+      transition: background .12s ease, transform .06s ease;
+      min-width: 120px;
+    }
+    #ms-reset:hover { background: rgba(25,118,210,0.06); transform: translateY(-1px); }
+    /* smaller submit CTA at bottom-right */
+    #ms-submit-btn { padding: 8px 10px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.06); background: #fff; color: var(--ms-accent); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    #ms-submit-btn:hover { box-shadow: 0 6px 18px rgba(0,0,0,0.08); transform: translateY(-1px); }
     .leaflet-marker-icon.ms-div-icon {
       background: transparent !important;
       background-image: none !important;
