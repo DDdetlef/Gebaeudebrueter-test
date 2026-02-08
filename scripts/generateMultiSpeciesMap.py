@@ -74,8 +74,8 @@ controls_html = '''
       flex-direction: column;
       gap: var(--ms-gap);
     }
-    /* collapsed: show only header (title + filter); keep compact */
-    .ms-control.collapsed { height: 46px; overflow: hidden; }
+    /* collapsed: show only header (title + filter); keep header fully visible */
+    .ms-control.collapsed { height: auto; overflow: visible; }
     .ms-control.collapsed .ms-row,
     .ms-control.collapsed .ms-section { display: none !important; }
     /* when collapsed hide the right-hand info toggle under Filter */
