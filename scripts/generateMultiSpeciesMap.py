@@ -42,9 +42,9 @@ controls_html = '''
     /* Control box (desktop + mobile pinned top-right) */
     .ms-control { position: fixed; top: 10px; right: 10px; left: auto; background: #fff; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; z-index: 10002; box-shadow: 0 2px 8px rgba(0,0,0,0.08); font-family: sans-serif; max-width:380px; max-height:80vh; overflow:auto; box-sizing:border-box; }
     /* collapsed: show only header (title + filter); keep compact */
-    .ms-control.collapsed { height: 56px; overflow: hidden; }
+    .ms-control.collapsed { height: 46px; overflow: hidden; }
     .ms-control.collapsed .ms-row,
-    .ms-control.collapsed .ms-section { display: none; }
+    .ms-control.collapsed .ms-section { display: none !important; }
     .ms-control-header { display:flex; align-items:center; justify-content:space-between; gap:8px; position:relative; }
     .ms-control h3 { margin: 0 0 6px 0; font-size: 15px; font-weight: 700; display:inline-block; }
     .ms-collapse-btn { background: rgba(255,255,255,0.95); border: 1px solid rgba(0,0,0,0.06); font-size: 18px; padding: 8px; cursor: pointer; line-height: 1; position: absolute; top: 6px; right: 6px; z-index: 10010; touch-action: manipulation; -webkit-tap-highlight-color: transparent; pointer-events: auto; border-radius:6px; }
@@ -100,8 +100,8 @@ controls_html = '''
     @media (max-width: 600px) {
       /* Pin control to top-right on mobile but show compact header and filter button */
       .ms-control { top: 10px; right: 10px; left: auto; bottom: auto; max-width: 92vw; border-radius: 10px; padding: 8px 10px; }
-      .ms-control.collapsed { height: 56px; overflow: hidden; }
-      .ms-control .ms-row, .ms-control h4 { display: none; }
+      .ms-control.collapsed { height: 46px; overflow: hidden; }
+      .ms-control.collapsed .ms-row, .ms-control.collapsed .ms-section { display: none !important; }
       .ms-control .ms-toggle { display: none; }
       .ms-control .ms-reset-wrap { display: none; }
       .ms-open-sheet-btn { display:inline-block; }
