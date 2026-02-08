@@ -2,7 +2,9 @@ import os
 import csv
 import time
 import re
+import sqlite3
 import requests
+from datetime import datetime
 from geopy.geocoders import Nominatim
 from urllib.parse import urlencode
 from address_utils import sanitize_street, geocode_with_fallbacks
@@ -15,6 +17,20 @@ if not GOOGLE_KEY and os.path.exists('api.key'):
         GOOGLE_KEY = f.read().strip()
 
 geolocator = Nominatim(user_agent='gebauedebrueter_geocoder')
+
+
+def _write_no_geocode_mark(web_id, reason, script_name='geocode_missing'):
+    """Append a row to reports/no_geocode_marked.csv when we decide to exclude a record."""
+    os.makedirs('reports', exist_ok=True)
+    fn = os.path.join('reports', 'no_geocode_marked.csv')
+    header = ['web_id', 'reason', 'script', 'timestamp']
+    exists = os.path.exists(fn)
+    ts = datetime.utcnow().isoformat() + 'Z'
+    with open(fn, 'a', newline='', encoding='utf-8') as f:
+        w = csv.writer(f)
+        if not exists:
+            w.writerow(header)
+        w.writerow([web_id, reason, script_name, ts])
 
 
 # using centralized sanitize_street from address_utils
@@ -31,6 +47,11 @@ google_fail = 0
 osm_success = 0
 none = 0
 
+# open DB so we can mark records that should be excluded from geocoding
+db = sqlite3.connect('brueter.sqlite')
+db.row_factory = sqlite3.Row
+dbc = db.cursor()
+
 for r in rows:
     web_id = r.get('web_id')
     cleaned, flags, original = sanitize_street(r.get('strasse') or '')
@@ -46,9 +67,20 @@ for r in rows:
     lon = ''
     status = ''
 
-    # If no street provided, skip geocoding entirely
-    if not cleaned:
-        results.append({'web_id': web_id, 'address': addr, 'provider': 'none', 'lat': '', 'lon': '', 'status': 'NO_STREET'})
+    # If no street or no house number present, skip geocoding and mark record as excluded
+    if not cleaned or not re.search(r"\d", cleaned):
+        # set no_geocode flag in DB (add column if missing elsewhere)
+        try:
+            dbc.execute("UPDATE gebaeudebrueter SET no_geocode=1 WHERE web_id=?", (web_id,))
+            db.commit()
+        except Exception:
+            pass
+        # record into no_geocode report
+        try:
+            _write_no_geocode_mark(web_id, 'NO_STREET_OR_NO_NUMBER', script_name='geocode_missing')
+        except Exception:
+            pass
+        results.append({'web_id': web_id, 'address': addr, 'provider': 'none', 'lat': '', 'lon': '', 'status': 'NO_STREET_OR_NO_NUMBER'})
         count += 1
         none += 1
         continue
@@ -111,3 +143,4 @@ print('google_success=', google_success)
 print('google_fail=', google_fail)
 print('osm_success=', osm_success)
 print('none=', none)
+db.close()

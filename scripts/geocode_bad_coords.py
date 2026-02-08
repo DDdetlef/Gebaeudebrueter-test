@@ -4,6 +4,7 @@ import re
 import time
 from typing import Optional
 import sqlite3
+from datetime import datetime
 from geopy.extra.rate_limiter import RateLimiter
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderServiceError, GeocoderTimedOut, GeocoderUnavailable
@@ -49,6 +50,19 @@ if GOOGLE_KEY:
 from address_utils import sanitize_street, geocode_with_fallbacks
 
 
+def _write_no_geocode_mark(web_id, reason, script_name='geocode_bad_coords'):
+    os.makedirs('reports', exist_ok=True)
+    fn = os.path.join('reports', 'no_geocode_marked.csv')
+    header = ['web_id', 'reason', 'script', 'timestamp']
+    exists = os.path.exists(fn)
+    ts = datetime.utcnow().isoformat() + 'Z'
+    with open(fn, 'a', newline='', encoding='utf-8') as f:
+        w = csv.writer(f)
+        if not exists:
+            w.writerow(header)
+        w.writerow([web_id, reason, script_name, ts])
+
+
 def get_address_for_web_id(cur, web_id: int) -> Optional[str]:
     cur.execute('SELECT strasse, plz, ort FROM gebaeudebrueter WHERE web_id=?', (web_id,))
     row = cur.fetchone()
@@ -57,9 +71,10 @@ def get_address_for_web_id(cur, web_id: int) -> Optional[str]:
     strasse, plz, ort = row
     cleaned, flags, original = sanitize_street(str(strasse)) if strasse is not None else ('', {}, '')
     clean_strasse = cleaned
-    if clean_strasse:
+    # if cleaned contains a digit (house number), return full address, otherwise None
+    if clean_strasse and re.search(r"\d", clean_strasse):
         return f"{clean_strasse}, {plz or ''}, {ort or 'Berlin'}, Deutschland"
-    # no street present -> do not geocode by PLZ only
+    # no usable street/number -> do not geocode by PLZ only
     return None
 
 
@@ -111,6 +126,16 @@ def main():
             continue
         address = get_address_for_web_id(cur, web_id_int)
         if not address:
+            # mark as excluded from geocoding
+            try:
+                cur.execute("UPDATE gebaeudebrueter SET no_geocode=1 WHERE web_id=?", (web_id_int,))
+                conn.commit()
+            except Exception:
+                pass
+            try:
+                _write_no_geocode_mark(web_id_int, 'NO_ADDRESS', script_name='geocode_bad_coords')
+            except Exception:
+                pass
             out_rows.append({'web_id': web_id, 'address': '', 'provider': 'none', 'lat': '', 'lon': '', 'status': 'NO_ADDRESS'})
             continue
         lat, lon, prov, status = geocode_address(address)

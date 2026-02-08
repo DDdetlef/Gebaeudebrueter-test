@@ -21,6 +21,31 @@ def main():
         return
     strasse, plz, ort = row
     cleaned, flags, original = sanitize_street(str(strasse))
+    # skip if no cleaned street or no house number
+    if not cleaned or not __import__('re').search(r"\d", cleaned):
+        # mark no_geocode flag
+        try:
+            cur.execute("UPDATE gebaeudebrueter SET no_geocode=1 WHERE web_id=?", (web_id,))
+            conn.commit()
+        except Exception:
+            pass
+        # write report
+        try:
+            import os, csv
+            os.makedirs('reports', exist_ok=True)
+            fn = os.path.join('reports', 'no_geocode_marked.csv')
+            exists = os.path.exists(fn)
+            from datetime import datetime
+            with open(fn, 'a', newline='', encoding='utf-8') as f:
+                w = csv.writer(f)
+                if not exists:
+                    w.writerow(['web_id','reason','script','timestamp'])
+                w.writerow([web_id, 'NO_STREET_OR_NO_NUMBER', 'geocode_and_insert_single', datetime.utcnow().isoformat() + 'Z'])
+        except Exception:
+            pass
+        print('Skipping geocode: no street/number for', web_id)
+        conn.close()
+        return
     ua = os.environ.get('NOMINATIM_USER_AGENT','Gebaeudebrueter/2026-02')
     locator = Nominatim(scheme='https', user_agent=ua)
     geocode = RateLimiter(locator.geocode, min_delay_seconds=1.0, max_retries=2, error_wait_seconds=2.0)
