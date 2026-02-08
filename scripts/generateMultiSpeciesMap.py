@@ -112,6 +112,7 @@ controls_html = '''
     .ms-section { background:#f7f7f7; border-radius:8px; padding:8px 10px; margin-top:8px; }
     .ms-row { display:flex; flex-wrap:wrap; gap:8px; align-items:flex-start; margin: 6px 0; }
     .ms-row label { font-size: 12px; line-height:1.5; display:flex; align-items:center; flex:0 0 calc(50% - 8px); box-sizing:border-box; }
+    .ms-control input[type=checkbox] { accent-color: initial; }
     input.ms-filter-species:checked,
     input.ms-filter-status:checked { accent-color:#424242; }
     .ms-all-toggle { display:flex; align-items:center; gap:8px; flex:0 0 100%; margin-bottom:4px; }
@@ -421,8 +422,8 @@ controls_html = '''
             var id = prefix + '-' + name;
             var wrap = document.createElement('label'); wrap.style.display = 'flex'; wrap.style.alignItems = 'center';
             var cb = document.createElement('input'); cb.type = 'checkbox'; cb.value = name; cb.id = id; cb.className = 'ms-filter-species'; cb.checked = true;
-            var swatch = document.createElement('span'); swatch.style.display = 'inline-block'; swatch.style.width = '12px'; swatch.style.height = '12px'; swatch.style.borderRadius = '50%'; swatch.style.margin = '0 6px'; swatch.style.background = SPECIES_COLORS_JS[name];
-            wrap.appendChild(cb); wrap.appendChild(swatch); wrap.appendChild(document.createTextNode(name));
+            var swatch = document.createElement('span'); swatch.style.display = 'inline-block'; swatch.style.width = '12px'; swatch.style.height = '12px'; swatch.style.borderRadius = '50%'; swatch.style.margin = '0 0 0 6px'; swatch.style.background = SPECIES_COLORS_JS[name];
+            wrap.appendChild(cb); wrap.appendChild(document.createTextNode(name)); wrap.appendChild(swatch);
             return wrap;
           }
           sRow.appendChild(makeEntry('ms-sp'));
@@ -437,8 +438,8 @@ controls_html = '''
             var id = prefix + '-' + key;
             var wrap = document.createElement('label'); wrap.style.display = 'flex'; wrap.style.alignItems = 'center';
             var cb = document.createElement('input'); cb.type = 'checkbox'; cb.value = key; cb.id = id; cb.className = 'ms-filter-status'; cb.checked = true;
-            var swatch = document.createElement('span'); swatch.style.display = 'inline-block'; swatch.style.width = '12px'; swatch.style.height = '12px'; swatch.style.borderRadius = '4px'; swatch.style.margin = '0 6px'; swatch.style.background = info.color;
-            wrap.appendChild(cb); wrap.appendChild(swatch); wrap.appendChild(document.createTextNode(info.label));
+            var swatch = document.createElement('span'); swatch.style.display = 'inline-block'; swatch.style.width = '12px'; swatch.style.height = '12px'; swatch.style.borderRadius = '4px'; swatch.style.margin = '0 0 0 6px'; swatch.style.background = info.color;
+            wrap.appendChild(cb); wrap.appendChild(document.createTextNode(info.label)); wrap.appendChild(swatch);
             return wrap;
           }
           stRow.appendChild(makeEntry('ms-st'));
