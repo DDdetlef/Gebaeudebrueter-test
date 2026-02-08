@@ -165,8 +165,8 @@ controls_html = '''
           </div>
           <div class="ms-modal-row">
             <div class="ms-modal-text">
-              <p>Diese Karte zeigt Standorte von Gebäudebrütern in Berlin an. Gebäudebrüter sind Tiere wie Mauersegler, Schwalben, Sperlinge oder Fledermäuse, die an Gebäuden leben.</p>
-	              <p>Die Markierungen stehen für Häuser, an denen Gebäudebrüter gefunden und gemeldet wurden.</p>
+              <p>Diese Karte zeigt Standorte von Gebäudebrütern in Berlin. Gebäudebrüter sind Tiere wie Mauersegler, Schwalben, Sperlinge oder Fledermäuse, die an Gebäuden leben.</p>
+              <p>Die Markierungen stehen für Häuser, an denen Gebäudebrüter gefunden und gemeldet wurden.</p>
 	              <p style="margin-top:10px; font-size: 11px; color:#555;">Datenquelle: Online-Datenbank des Projekts Gebäudebrüter der NABU Bezirksgruppe Steglitz-Zehlendorf</p>
             </div>
             <div class="ms-modal-image">
@@ -176,10 +176,8 @@ controls_html = '''
           
           <h3 class="ms-modal-section-title">Tipps für die Nutzung der Karte</h3>
           <div class="ms-modal-text">
-            <ol>
-              <li>Nutzen Sie die Filter auf der linken Seite, um die angezeigten Arten und den Status von Nachweisen (z. B. Sanierung, Kontrolle, Ersatzmaßnahmen) gezielt ein- oder auszublenden.</li>
-              <li>Klicken Sie auf einen Standort-Marker, um weitere Informationen zu den dort erfassten Arten und Maßnahmen zu erhalten.</li>
-            </ol>
+            <p>Setze Filter, um die angezeigten Arten und den Status von Nachweisen gezielt ein- oder auszublenden.</p>
+            <p>Klicke in der Karte auf einen Standort-Marker, um weitere Informationen zu den dort erfassten Arten und Maßnahmen zu erhalten.</p>
           </div>
           
         </div>
