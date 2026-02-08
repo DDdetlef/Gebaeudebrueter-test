@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import datetime
 import folium
 from folium import plugins
 import json
@@ -541,6 +542,27 @@ def main():
   conn.row_factory = sqlite3.Row
   cur = conn.cursor()
 
+  # determine last scraping date from DB (update_date)
+  try:
+    cur.execute("SELECT MAX(update_date) as last FROM gebaeudebrueter")
+    last_raw = cur.fetchone()[0]
+  except Exception:
+    last_raw = None
+  stand_text = ''
+  if last_raw:
+    try:
+      # expect format 'YYYY-MM-DD HH:MM:SS' or similar
+      dt = datetime.strptime(last_raw.split('.')[0], '%Y-%m-%d %H:%M:%S') if ' ' in last_raw else datetime.strptime(last_raw, '%Y-%m-%d')
+      stand_text = f" - Stand: {dt.month:02d}.{dt.year}"
+    except Exception:
+      # fallback: try to extract year-month
+      try:
+        parts = last_raw.split('-')
+        if len(parts) >= 2:
+          stand_text = f" - Stand: {parts[1]}.{parts[0]}"
+      except Exception:
+        stand_text = ''
+
   m = folium.Map(location=[52.5163, 13.3777], tiles='cartodbpositron', zoom_start=12)
   marker_cluster = plugins.MarkerCluster()
   m.add_child(marker_cluster)
@@ -609,7 +631,9 @@ def main():
     ).add_to(marker_cluster)
     count += 1
 
-  m.get_root().html.add_child(folium.Element(controls_html))
+  # inject last-scrape "Stand: mm.yyyy" into control title
+  controls_with_stand = controls_html.replace('<h3>Karte der Gebäudebrüter in Berlin</h3>', f'<h3>Karte der Gebäudebrüter in Berlin{stand_text}</h3>')
+  m.get_root().html.add_child(folium.Element(controls_with_stand))
   m.get_root().html.add_child(folium.Element('<div style="position: fixed; bottom: 0; left: 0; background: white; padding: 4px; z-index:9999">Markers: ' + str(count) + '</div>'))
 
   m.save(OUTPUT_HTML)
