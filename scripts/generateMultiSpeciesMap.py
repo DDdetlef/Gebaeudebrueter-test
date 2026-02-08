@@ -91,10 +91,10 @@ controls_html = '''
     .ms-toggle .arrow { display: none; }
     /* Filter button: blue border when control is expanded, transparent when collapsed */
     .ms-control:not(.collapsed) .ms-open-sheet-btn { border-color: var(--ms-accent); box-shadow: 0 6px 18px rgba(25,118,210,0.08); }
-    .ms-control.collapsed .ms-open-sheet-btn { border-color: transparent; box-shadow: none; }
+    .ms-control.collapsed .ms-open-sheet-btn { border-color: rgba(0,0,0,0.12); box-shadow: none; }
     .ms-control button, .ms-control .ms-open-sheet-btn, .ms-control .ms-toggle { transition: background .15s, box-shadow .12s, transform .08s; }
     .ms-control button:focus, .ms-control .ms-open-sheet-btn:focus, .ms-control .ms-toggle:focus { outline: 2px solid var(--ms-focus); outline-offset: 2px; }
-    .ms-toggle .arrow { display:inline-block; transition: transform .15s ease; }
+    .ms-toggle .arrow { display:none !important; transition: transform .15s ease; }
     .ms-toggle.open .arrow { transform: rotate(90deg); }
     .ms-modal { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.45); z-index:10000; display:flex; align-items:center; justify-content:center; }
     .ms-modal-content { background: #fff; padding: 18px 22px; border-radius:10px; max-width:700px; width:calc(100% - 40px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); position:relative; }
@@ -207,7 +207,7 @@ controls_html = '''
     @media (max-width: 600px) {
       /* Pin control to top-right on mobile but show compact header and filter button */
       .ms-control { top: 10px; right: 10px; left: auto; bottom: auto; max-width: 92vw; border-radius: 10px; padding: 8px 10px; }
-      .ms-control.collapsed { height: 46px; overflow: hidden; }
+      .ms-control.collapsed { height: auto; overflow: visible; }
       .ms-control.collapsed .ms-row, .ms-control.collapsed .ms-section { display: none !important; }
       .ms-control .ms-toggle { display: none; }
       .ms-control .ms-reset-wrap { display: none; }
