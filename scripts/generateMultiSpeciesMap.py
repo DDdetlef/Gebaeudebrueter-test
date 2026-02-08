@@ -72,6 +72,7 @@ controls_html = '''
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
+      align-items: stretch;
       gap: var(--ms-gap);
     }
     /* collapsed: show only header (title + filter); keep header fully visible */
@@ -80,11 +81,13 @@ controls_html = '''
     .ms-control.collapsed .ms-section { display: none !important; }
     /* when collapsed hide the right-hand info toggle under Filter */
     .ms-control.collapsed .ms-right-header .ms-toggle { display: none !important; }
-    .ms-control-header { display:flex; align-items:center; justify-content:space-between; gap:8px; position:relative; }
+    .ms-control-header { display:flex; align-items:center; justify-content:space-between; gap:8px; position:sticky; top:0; background: var(--ms-bg); z-index:10003; padding-top:6px; padding-bottom:8px; border-bottom:1px solid rgba(0,0,0,0.06); width:100%; box-sizing:border-box; flex-shrink:0; }
     .ms-control h3 { margin: 0 0 6px 0; font-size: 15px; font-weight: 700; display:inline-block; }
     .ms-title-main { font-size: 15px; font-weight: 700; }
     .ms-title-sub { font-size: 12px; color: #555; margin-top: 2px; }
-    .ms-left-header h3 { margin: 0; }
+    .ms-top-header h3 { margin: 0; }
+    .ms-top-header { display:flex; align-items:center; gap:8px; }
+    .ms-right-header { display:flex; flex-direction:column; align-items:center; gap:6px; }
     .ms-collapse-btn { background: rgba(255,255,255,0.95); border: 1px solid rgba(0,0,0,0.06); font-size: 18px; padding: 8px; cursor: pointer; line-height: 1; position: absolute; top: 6px; right: 6px; z-index: 10010; touch-action: manipulation; -webkit-tap-highlight-color: transparent; pointer-events: auto; border-radius:6px; }
     .ms-open-sheet-btn { font-size:13px; padding:6px 8px; border-radius:6px; border:1px solid #ddd; background:#fff; cursor:pointer; }
     .ms-toggle { cursor: pointer; display: inline-flex; align-items: center; gap:8px; font-size:15px; color:#0b66c3; user-select: none; }
@@ -159,6 +162,11 @@ controls_html = '''
     .ms-submit-btn { font-size:13px; padding:6px 8px; border-radius:6px; border:1px solid #1976d2; background:#fff; cursor:pointer; color:#1976d2; }
     .ms-submit-btn:hover { background: #f5fbff; }
     .ms-submit-cta { display:inline-block; padding:6px 10px; border-radius:6px; border:1px solid #1976d2; background:#1976d2; color:#fff; text-decoration:none; }
+
+    /* primary blue style for inline info button matching 'Filter anwenden' */
+    .ms-info-btn { border: 1px solid var(--ms-accent); background: var(--ms-accent); color: #fff; box-shadow: 0 6px 18px rgba(25,118,210,0.08); }
+    .ms-info-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(25,118,210,0.14); }
+    .ms-info-btn span, .ms-info-btn small { color: #fff; }
     .ms-control button { min-height: 36px; }
     .ms-badge { display: none; }
     .ms-hidden { display: none !important; }
@@ -218,15 +226,14 @@ controls_html = '''
     </style>
     <div class="ms-control collapsed" id="ms-control">
       <div class="ms-control-header" style="display:flex;justify-content:space-between;align-items:center;">
-          <div class="ms-left-header" style="display:flex;align-items:center;gap:8px;">
+          <div class="ms-top-header" style="display:flex;align-items:center;gap:8px;">
             <div class="ms-title">
               <div class="ms-title-main">Karte der Gebäudebrüter in Berlin</div>
               <div class="ms-title-sub">Stand: %STAND_DATE%</div>
             </div>
           </div>
-          <div class="ms-right-header" style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+          <div class="ms-right-header" style="display:flex;flex-direction:column;align-items:center;gap:6px;">
             <button id="ms-open-sheet" class="ms-open-sheet-btn" title="Filter öffnen">Filter</button>
-            <div id="ms-more-info-toggle" class="ms-toggle" title="Mehr Informationen anzeigen"><span class="arrow">►</span><span>ⓘ ?</span></div>
           </div>
         </div>
       <div class="desktop-only">
@@ -238,13 +245,22 @@ controls_html = '''
           <h4>Filter Status</h4>
           <div class="ms-row" id="ms-status-row"></div>
         </div>
+        
         <div class="ms-row ms-reset-wrap" style="display:flex;justify-content:space-between;align-items:flex-end;">
           <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;">
             <button id="ms-apply-desktop" title="Filter anwenden">Filter anwenden</button>
             <button id="ms-reset" title="Alle Marker zeigen">⟲ Filter zurücksetzen</button>
           </div>
-          <div style="display:flex;align-items:center;">
-            <button id="ms-submit-btn" class="ms-submit-btn" title="Nistplatz melden">Nistplatz melden</button>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+            <div class="ms-more-info-copy-wrap" style="margin-bottom:4px;">
+              <button id="ms-more-info-btn" class="ms-submit-btn ms-info-btn" title="Mehr Informationen anzeigen" aria-label="Mehr Informationen anzeigen" style="display:inline-flex;align-items:center;gap:8px;padding:6px 10px;">
+                <span style="font-size:14px;line-height:1;color:#fff;">ⓘ</span>
+                <span style="font-size:12px;color:#fff;">mehr Infos</span>
+              </button>
+            </div>
+            <div style="display:flex;align-items:center;">
+              <button id="ms-submit-btn" class="ms-submit-btn" title="Nistplatz melden">Nistplatz melden</button>
+            </div>
           </div>
         </div>
       </div>
@@ -372,6 +388,9 @@ controls_html = '''
         }
         if(togDesktop){ togDesktop.addEventListener('click', openModal); }
         if(togSheet){ togSheet.addEventListener('click', openModal); }
+        // wire any copied desktop toggles or info buttons (e.g., placed near submit button)
+        var extraDesktopTogs = document.querySelectorAll('.ms-more-info-toggle-copy, #ms-more-info-btn');
+        extraDesktopTogs.forEach(function(t){ t.addEventListener('click', openModal); });
         if(closeBtn){ closeBtn.addEventListener('click', closeModal); }
         if(modal){ modal.addEventListener('click', function(ev){ if(ev.target === modal){ closeModal(); } }); }
       })();
@@ -386,6 +405,51 @@ controls_html = '''
         function openSubmit(ev){ if(ev){ ev.preventDefault(); } if(sheet){ sheet.classList.remove('open'); } if(submitModal){ submitModal.style.display = 'flex'; } }
         function closeSubmit(){ if(submitModal){ submitModal.style.display = 'none'; } }
         if(submitBtn){ submitBtn.addEventListener('click', openSubmit); }
+        function isActuallyVisible(el){
+          if(!el) return false;
+          // getClientRects is empty when display:none or not in layout
+          if(!el.getClientRects || el.getClientRects().length === 0) return false;
+          var cs;
+          try{ cs = window.getComputedStyle(el); }catch(e){ cs = null; }
+          if(cs && (cs.display === 'none' || cs.visibility === 'hidden' || cs.opacity === '0')) return false;
+          return true;
+        }
+        function matchInfoButtonWidth(){
+          var s = document.getElementById('ms-submit-btn');
+          var i = document.getElementById('ms-more-info-btn');
+          if(!isActuallyVisible(s) || !isActuallyVisible(i)) return false;
+          var r = s.getBoundingClientRect();
+          if(!r || r.width < 80) return false;
+          i.style.width = Math.round(r.width) + 'px';
+          i.style.minWidth = Math.round(r.width) + 'px';
+          i.style.boxSizing = 'border-box';
+          return true;
+        }
+        function matchApplyButtonWidth(){
+          var reset = document.getElementById('ms-reset');
+          var apply = document.getElementById('ms-apply-desktop');
+          if(!isActuallyVisible(reset) || !isActuallyVisible(apply)) return false;
+          var r = reset.getBoundingClientRect();
+          if(!r || r.width < 120) return false;
+          apply.style.width = Math.round(r.width) + 'px';
+          apply.style.minWidth = Math.round(r.width) + 'px';
+          apply.style.boxSizing = 'border-box';
+          return true;
+        }
+        function scheduleButtonSizing(){
+          // run over a few frames so layout/fonts settle
+          var frames = 0;
+          function tick(){
+            frames++;
+            matchApplyButtonWidth();
+            matchInfoButtonWidth();
+            if(frames < 6) requestAnimationFrame(tick);
+          }
+          requestAnimationFrame(tick);
+        }
+        // run once in case control starts expanded; otherwise we trigger on expand
+        scheduleButtonSizing();
+        window.addEventListener('resize', scheduleButtonSizing);
         if(submitClose){ submitClose.addEventListener('click', closeSubmit); }
         if(submitCancel){ submitCancel.addEventListener('click', closeSubmit); }
         if(submitModal){ submitModal.addEventListener('click', function(ev){ if(ev.target === submitModal){ closeSubmit(); } }); }
@@ -547,7 +611,20 @@ controls_html = '''
           if(window.innerWidth && window.innerWidth <= 600){
             if(sheet){ sheet.classList.add('open'); }
           } else {
-            if(ctrl){ ctrl.classList.toggle('collapsed'); }
+            if(ctrl){
+              ctrl.classList.toggle('collapsed');
+              // after expanding, re-run sizing so widths are measured when visible
+              if(!ctrl.classList.contains('collapsed')){
+                try{ if(window.requestAnimationFrame){ requestAnimationFrame(function(){ requestAnimationFrame(function(){
+                  var btn = document.getElementById('ms-submit-btn');
+                  var info = document.getElementById('ms-more-info-btn');
+                  var reset = document.getElementById('ms-reset');
+                  var apply = document.getElementById('ms-apply-desktop');
+                  if(btn && info){ var r1 = btn.getBoundingClientRect(); if(r1 && r1.width > 80){ info.style.width = Math.round(r1.width) + 'px'; info.style.minWidth = Math.round(r1.width) + 'px'; } }
+                  if(reset && apply){ var r2 = reset.getBoundingClientRect(); if(r2 && r2.width > 120){ apply.style.width = Math.round(r2.width) + 'px'; apply.style.minWidth = Math.round(r2.width) + 'px'; } }
+                }); }); } }catch(e){}
+              }
+            }
           }
         }
         // apply buttons
