@@ -39,8 +39,41 @@ NEUTRAL_FILL = '#cccccc'
 controls_html = '''
     <style>
     .leaflet-container .ms-marker:hover { transform: scale(1.15); box-shadow: 0 1px 6px rgba(0,0,0,0.35); }
+    /* Design tokens for ms-control (easy tuning) */
+    :root {
+      --ms-width: 380px;
+      --ms-max-width-vw: 30vw;
+      --ms-padding: 12px;
+      --ms-gap: 12px;
+      --ms-radius: 8px;
+      --ms-bg: #ffffff;
+      --ms-border: #e6e6e6;
+      --ms-shadow: 0 6px 18px rgba(0,0,0,0.12);
+      --ms-accent: #1976d2;
+      --ms-focus: #2684ff;
+    }
     /* Control box (desktop + mobile pinned top-right) */
-    .ms-control { position: fixed; top: 10px; right: 10px; left: auto; background: #fff; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; z-index: 10002; box-shadow: 0 2px 8px rgba(0,0,0,0.08); font-family: sans-serif; max-width:380px; max-height:80vh; overflow:auto; box-sizing:border-box; }
+    .ms-control {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      left: auto;
+      background: var(--ms-bg);
+      padding: var(--ms-padding);
+      border: 1px solid var(--ms-border);
+      border-radius: var(--ms-radius);
+      z-index: 10002;
+      box-shadow: var(--ms-shadow);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      width: var(--ms-width);
+      max-width: var(--ms-max-width-vw);
+      max-height: 80vh;
+      overflow: auto;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: var(--ms-gap);
+    }
     /* collapsed: show only header (title + filter); keep compact */
     .ms-control.collapsed { height: 46px; overflow: hidden; }
     .ms-control.collapsed .ms-row,
@@ -53,6 +86,8 @@ controls_html = '''
     .ms-collapse-btn { background: rgba(255,255,255,0.95); border: 1px solid rgba(0,0,0,0.06); font-size: 18px; padding: 8px; cursor: pointer; line-height: 1; position: absolute; top: 6px; right: 6px; z-index: 10010; touch-action: manipulation; -webkit-tap-highlight-color: transparent; pointer-events: auto; border-radius:6px; }
     .ms-open-sheet-btn { font-size:13px; padding:6px 8px; border-radius:6px; border:1px solid #ddd; background:#fff; cursor:pointer; }
     .ms-toggle { cursor: pointer; display: inline-flex; align-items: center; gap:6px; font-size:13px; color:#0b66c3; user-select: none; }
+    .ms-control button, .ms-control .ms-open-sheet-btn, .ms-control .ms-toggle { transition: background .15s, box-shadow .12s, transform .08s; }
+    .ms-control button:focus, .ms-control .ms-open-sheet-btn:focus, .ms-control .ms-toggle:focus { outline: 2px solid var(--ms-focus); outline-offset: 2px; }
     .ms-toggle .arrow { display:inline-block; transition: transform .15s ease; }
     .ms-toggle.open .arrow { transform: rotate(90deg); }
     .ms-modal { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.45); z-index:10000; display:flex; align-items:center; justify-content:center; }
@@ -89,6 +124,7 @@ controls_html = '''
     .ms-submit-btn { font-size:13px; padding:6px 8px; border-radius:6px; border:1px solid #1976d2; background:#fff; cursor:pointer; color:#1976d2; }
     .ms-submit-btn:hover { background: #f5fbff; }
     .ms-submit-cta { display:inline-block; padding:6px 10px; border-radius:6px; border:1px solid #1976d2; background:#1976d2; color:#fff; text-decoration:none; }
+    .ms-control button { min-height: 36px; }
     .ms-badge { display: none; }
     .ms-hidden { display: none !important; }
     .leaflet-marker-icon.ms-div-icon {
@@ -100,6 +136,9 @@ controls_html = '''
     }
     .leaflet-marker-icon.ms-div-icon::before,
     .leaflet-marker-icon.ms-div-icon::after { display: none !important; }
+    /* subtle custom scrollbar for the control on desktop */
+    .ms-control::-webkit-scrollbar { width: 8px; }
+    .ms-control::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius:6px; }
     @media (max-width: 600px) {
       /* Pin control to top-right on mobile but show compact header and filter button */
       .ms-control { top: 10px; right: 10px; left: auto; bottom: auto; max-width: 92vw; border-radius: 10px; padding: 8px 10px; }
