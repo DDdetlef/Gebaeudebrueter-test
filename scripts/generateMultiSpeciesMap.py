@@ -3,6 +3,7 @@ from datetime import datetime
 import folium
 from folium import plugins
 import json
+from urllib.parse import quote
 
 # New multi-species marker map with segmented fill (species) and border/icon (status)
 # Output: GebaeudebrueterMultiMarkers.html
@@ -776,7 +777,22 @@ def main():
     "LEFT JOIN geolocation_google gg ON b.web_id = gg.web_id "
     "WHERE (b.is_test IS NULL OR b.is_test=0) AND (b.noSpecies IS NULL OR b.noSpecies=0)"
   )
-  cur.execute(query)
+  try:
+    cur.execute(query)
+  except sqlite3.OperationalError:
+    # fallback for older DB schema without strasse_original or is_test
+    # fallback without schema-dependent filters/columns
+    fallback_query = (
+      "SELECT b.web_id, b.bezirk, b.plz, b.ort, b.strasse, b.anhang, b.erstbeobachtung, b.beschreibung, b.besonderes, "
+      "b.mauersegler, b.sperling, b.schwalbe, b.fledermaus, b.star, b.andere, "
+      "b.sanierung, b.ersatz, b.kontrolle, b.verloren, "
+      "o.latitude AS osm_latitude, o.longitude AS osm_longitude, gg.latitude AS google_latitude, gg.longitude AS google_longitude "
+      "FROM gebaeudebrueter b "
+      "LEFT JOIN geolocation_osm o ON b.web_id = o.web_id "
+      "LEFT JOIN geolocation_google gg ON b.web_id = gg.web_id "
+      "WHERE 1=1"
+    )
+    cur.execute(fallback_query)
 
   rows = cur.fetchall()
   url = 'http://www.gebaeudebrueter-in-berlin.de/index.php'
@@ -806,8 +822,15 @@ def main():
     fund_text = ', '.join(species) if species else 'andere Art'
     status_names = [STATUS_INFO[k]['label'] for k in all_statuses]
     status_text = ', '.join(status_names) if status_names else '—'
-    # prefer original street entry for display when present
-    addr_field = r['strasse_original'] if (r['strasse_original'] and str(r['strasse_original']).strip()) else r['strasse']
+    # prefer original street entry for display when present (fallback if column missing)
+    addr_field = None
+    try:
+      if r['strasse_original'] and str(r['strasse_original']).strip():
+        addr_field = r['strasse_original']
+    except Exception:
+      addr_field = None
+    if not addr_field:
+      addr_field = r['strasse']
     popup_html = (
       f"<b>Arten</b><br/>{fund_text}"
       f"<br/><br/><b>Status</b><br/>{status_text}"
@@ -816,6 +839,28 @@ def main():
       f"<br/><br/><b>Beschreibung</b><br/>{(r['beschreibung'] or '')}"
       f"<br/><br/><b>Link zur Datenbank</b><br/><a href={url}?ID={r['web_id']}>{r['web_id']}</a>"
     )
+
+    # add a mailto button so users can report observations via their email app
+    try:
+      subject = f"Kontrolle Gebäudebrüter-Standort: {addr_field}"
+      body = (
+        "Hallo NABU-Team,\n"
+        f"an der Adresse: {addr_field}, {r['plz']} {r['ort']}, Fundort: {r['web_id']} habe ich folgende Beobachtung gemacht:\n"
+        "Beobachtete Vogelart(en):\n"
+        "Anzahl der beobachteten Vögel:\n"
+        "Nistplätze vorhanden: ja/nein\n"
+        "Fotos im Anhang: ja/nein\n"
+        "Eigene Beschreibung: \n\n"
+        "Viele Grüße,\n"
+      )
+      mailto = f"mailto:detlefdev@gmail.com?subject={quote(subject)}&body={quote(body)}"
+      popup_html += (
+        f"<br/><br/><a href=\"{mailto}\" target=\"_blank\" rel=\"noreferrer\" "
+        f"style=\"display:inline-block;padding:6px 10px;border-radius:6px;border:1px solid #1976d2;"
+        f"background:#1976d2;color:#fff;text-decoration:none;\">Beobachtung melden</a>"
+      )
+    except Exception:
+      pass
 
     address_text = f"{addr_field}, {r['plz']} {r['ort']}"
     icon_html = build_divicon_html(species, primary_status, all_statuses, address_text)

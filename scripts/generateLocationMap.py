@@ -1,6 +1,7 @@
 import sqlite3
 import folium
 from folium import plugins
+from urllib.parse import quote
 
 # Generate Meldungen map from database, prefer OSM coords then Google as fallback
 try:
@@ -23,7 +24,19 @@ query = ("SELECT b.web_id, b.bezirk, b.plz, b.ort, b.strasse, b.anhang, b.erstbe
          "LEFT JOIN geolocation_google gg ON b.web_id = gg.web_id "
          "WHERE (b.is_test IS NULL OR b.is_test=0) AND (b.noSpecies IS NULL OR b.noSpecies=0)")
 
-cur.execute(query)
+try:
+    cur.execute(query)
+except sqlite3.OperationalError:
+    # fallback for older DB schema without is_test
+    # fallback without schema-dependent filters/columns
+    fallback_query = ("SELECT b.web_id, b.bezirk, b.plz, b.ort, b.strasse, b.anhang, b.erstbeobachtung, b.beschreibung, b.besonderes, "
+                      "b.mauersegler, b.sperling, b.schwalbe, b.fledermaus, b.star, b.andere, "
+                      "o.latitude AS osm_latitude, o.longitude AS osm_longitude, gg.latitude AS google_latitude, gg.longitude AS google_longitude "
+                      "FROM gebaeudebrueter b "
+                      "LEFT JOIN geolocation_osm o ON b.web_id = o.web_id "
+                      "LEFT JOIN geolocation_google gg ON b.web_id = gg.web_id "
+                      "WHERE 1=1")
+    cur.execute(fallback_query)
 rows = cur.fetchall()
 url = 'http://www.gebaeudebrueter-in-berlin.de/index.php'
 count = 0
@@ -84,6 +97,28 @@ for r in rows:
         f"<br/><br/><b>Beschreibung</b><br/>{(r['beschreibung'] or '')}"
         f"<br/><br/><b>Link zur Datenbank</b><br/><a href={url}?ID={web_id}>{web_id}</a>"
     )
+
+    # add mailto button for reporting observations
+    try:
+        subject = f"Kontrolle Gebäudebrüter-Standort: {r['strasse']}, {r['plz']} {r['ort']}"
+        body = (
+            "Hallo NABU-Team,\n"
+            f"an der Adresse: {r['strasse']}, {r['plz']} {r['ort']}, Fundort: {web_id} habe ich folgende Beobachtung gemacht:\n"
+            "Beobachtete Vogelart(en):\n"
+            "Anzahl der beobachteten Vögel:\n"
+            "Nistplätze vorhanden: ja/nein\n"
+            "Fotos im Anhang: ja/nein\n"
+            "Eigene Beschreibung: \n\n"
+            "Viele Grüße,\n"
+        )
+        mailto = f"mailto:detlefdev@gmail.com?subject={quote(subject)}&body={quote(body)}"
+        popup_html += (
+            f"<br/><br/><a href=\"{mailto}\" target=\"_blank\" rel=\"noreferrer\" "
+            f"style=\"display:inline-block;padding:6px 10px;border-radius:6px;border:1px solid #1976d2;"
+            f"background:#1976d2;color:#fff;text-decoration:none;\">Beobachtung melden</a>"
+        )
+    except Exception:
+        pass
 
     folium.Marker(location=[latf, lonf], popup=folium.Popup(popup_html, max_width=450), tooltip=tooltip_text, icon=folium.Icon(color=color)).add_to(marker_cluster)
     count += 1
