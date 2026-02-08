@@ -80,7 +80,8 @@ for r in rows:
     # If not found via Google, try OSM
     if not found:
         # Use geocode_with_fallbacks to try variants against Nominatim
-        loc, used = geocode_with_fallbacks(lambda a: geolocator.geocode(a, addressdetails=False, exactly_one=True, timeout=10), cleaned, plz or '', ort or 'Berlin')
+        # pass range_end from flags when available so geocoder can fallback to range end
+        loc, used = geocode_with_fallbacks(lambda a: geolocator.geocode(a, addressdetails=False, exactly_one=True, timeout=10), cleaned, plz or '', ort or 'Berlin', range_end=flags.get('range_end'))
         if loc:
             lat = getattr(loc, 'latitude', None)
             lon = getattr(loc, 'longitude', None)

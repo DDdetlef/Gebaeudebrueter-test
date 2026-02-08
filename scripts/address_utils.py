@@ -60,19 +60,37 @@ def sanitize_street(s: str) -> Tuple[str, Dict[str,int], str]:
             # allow plus or hyphen/comma separators
             return bool(re.match(r"^[\s,]*[+\-]?[A-Za-z](?:\s*[-–]\s*[A-Za-z])?(?:\s*(?:,|\s)\s*[+\-]?[A-Za-z](?:\s*[-–]\s*[A-Za-z])?)*[\s,]*$", t))
 
-        # If rest begins with a numeric range (e.g. '-13' or '/13'), fold it into the house number
+        # If rest begins with a numeric range (e.g. '-13' or '/13'), record the range end but do NOT fold it
+        # into the cleaned house number (we prefer the first number for stored `strasse`).
         range_match = re.match(r"^\s*([-–/])\s*(\d+[A-Za-z]?)", rest)
         if range_match:
             sep = range_match.group(1)
             range_num = range_match.group(2)
-            # append normalized range to number (e.g. '10-13')
-            number = f"{number}{sep}{range_num}"
-            # remove the consumed part from rest
-            rest = _normalize_ws(rest[range_match.end():] or '')
+            # remember the range end in flags for geocoding fallbacks
             flags['has_range'] = 1
+            flags['range_end'] = range_num
+            # do NOT append range to `number` here; just remove consumed part from rest
+            rest = _normalize_ws(rest[range_match.end():] or '')
 
         # Decide if rest should be considered descriptive text after number.
         is_house_suffix = _rest_is_house_suffix(rest)
+
+        # If rest is a house-number suffix composed of letters (e.g. 'a', 'a-c', 'a,b'),
+        # fold it into the house number (uppercase, no space) => '70A', '70A-C'
+        letter_suffix_match = re.match(r"^[\s,]*([+\-]?[A-Za-z](?:\s*[-–/]\s*[A-Za-z])?(?:\s*(?:,|\s)\s*[+\-]?[A-Za-z](?:\s*[-–/]\s*[A-Za-z])?)*)[\s,]*$", rest)
+        if letter_suffix_match:
+            suff = letter_suffix_match.group(1)
+            # normalize separators and uppercase letters
+            suff_norm = re.sub(r"\s*([-–/.,\s])\s*", lambda m: m.group(1) if m.group(1) in '-/,' else m.group(1), suff)
+            suff_norm = suff_norm.replace('–', '-')
+            suff_norm = re.sub(r"\s+", '', suff_norm)
+            suff_norm = suff_norm.upper()
+            # append to number without space
+            number = f"{number}{suff_norm}"
+            # consumed suffix, clear rest
+            rest = ''
+            is_house_suffix = True
+
         # If rest still contains digits after attempting to consume a numeric range, treat it conservatively
         if rest and not is_house_suffix and not street_kw.search(rest) and not re.search(r"\d", rest):
             flags['flag_has_text_after_number'] = 1
@@ -88,7 +106,7 @@ def sanitize_street(s: str) -> Tuple[str, Dict[str,int], str]:
     cleaned = _normalize_ws(cleaned)
     return cleaned, flags, original
 
-def geocode_with_fallbacks(geocode_callable: Callable[[str], Optional[object]], cleaned_street: str, plz: str, ort: str, max_attempts: int = 3, pause: float = 1.0):
+def geocode_with_fallbacks(geocode_callable: Callable[[str], Optional[object]], cleaned_street: str, plz: str, ort: str, range_end: Optional[str]=None, max_attempts: int = 3, pause: float = 1.0):
     """Try geocoding with several address variants using provided geocode callable.
 
     geocode_callable should accept an address string and return a location-like object or None.
@@ -115,6 +133,13 @@ def geocode_with_fallbacks(geocode_callable: Callable[[str], Optional[object]], 
                 number = number_raw
             variants.append(f"{street_before} {number}, {plz}, {ort}, Deutschland")
             variants.append(f"{street_before} {number} {ort}, Deutschland")
+            # If a separate range_end was supplied, add fallback variants using the range end
+            if range_end:
+                end_match = re.match(r"^(\d+[A-Za-z]?)", range_end)
+                if end_match:
+                    end_num = end_match.group(1)
+                    variants.append(f"{street_before} {end_num}, {plz}, {ort}, Deutschland")
+                    variants.append(f"{street_before} {end_num} {ort}, Deutschland")
     # fallback to plz+ort
     variants.append(f"{plz}, {ort}, Deutschland")
 
