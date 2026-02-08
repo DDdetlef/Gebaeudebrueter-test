@@ -45,6 +45,8 @@ controls_html = '''
     .ms-control.collapsed { height: 46px; overflow: hidden; }
     .ms-control.collapsed .ms-row,
     .ms-control.collapsed .ms-section { display: none !important; }
+    /* when collapsed hide the right-hand info toggle under Filter */
+    .ms-control.collapsed .ms-right-header .ms-toggle { display: none !important; }
     .ms-control-header { display:flex; align-items:center; justify-content:space-between; gap:8px; position:relative; }
     .ms-control h3 { margin: 0 0 6px 0; font-size: 15px; font-weight: 700; display:inline-block; }
     .ms-collapse-btn { background: rgba(255,255,255,0.95); border: 1px solid rgba(0,0,0,0.06); font-size: 18px; padding: 8px; cursor: pointer; line-height: 1; position: absolute; top: 6px; right: 6px; z-index: 10010; touch-action: manipulation; -webkit-tap-highlight-color: transparent; pointer-events: auto; border-radius:6px; }
@@ -110,15 +112,16 @@ controls_html = '''
     }
     </style>
     <div class="ms-control collapsed" id="ms-control">
-      <div class="ms-control-header"><h3>Karte der Gebäudebrüter in Berlin</h3>
-        <div style="display:flex;align-items:center;gap:8px">
-          <button id="ms-open-sheet" class="ms-open-sheet-btn" title="Filter öffnen">Filter</button>
+      <div class="ms-control-header" style="display:flex;justify-content:space-between;align-items:center;">
+          <div class="ms-left-header" style="display:flex;align-items:center;gap:8px;">
+            <h3>Karte der Gebäudebrüter in Berlin</h3>
+            <button id="ms-submit-btn" class="ms-submit-btn" title="Nistplatz melden">Nistplatz melden</button>
+          </div>
+          <div class="ms-right-header" style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+            <button id="ms-open-sheet" class="ms-open-sheet-btn" title="Filter öffnen">Filter</button>
+            <div id="ms-more-info-toggle" class="ms-toggle" title="Mehr Informationen anzeigen"><span class="arrow">►</span><span>ⓘ ?</span></div>
+          </div>
         </div>
-      </div>
-      <div class="ms-row">
-        <div id="ms-more-info-toggle" class="ms-toggle" title="Mehr Informationen anzeigen"><span class="arrow">►</span><span>ⓘ ?</span></div>
-        <button id="ms-submit-btn" class="ms-submit-btn" title="Nistplatz melden">Nistplatz melden</button>
-      </div>
       <div class="desktop-only">
         <div class="ms-section">
           <h4>Filter Arten</h4>
