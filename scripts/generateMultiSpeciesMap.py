@@ -112,9 +112,37 @@ controls_html = '''
     .ms-section { background:#f7f7f7; border-radius:8px; padding:8px 10px; margin-top:8px; }
     .ms-row { display:flex; flex-wrap:wrap; gap:8px; align-items:flex-start; margin: 6px 0; }
     .ms-row label { font-size: 12px; line-height:1.5; display:flex; align-items:center; flex:0 0 calc(50% - 8px); box-sizing:border-box; }
-    .ms-control input[type=checkbox] { accent-color: initial; }
-    input.ms-filter-species:checked,
-    input.ms-filter-status:checked { accent-color:#424242; }
+    .ms-value { margin-left: 10px; font-size: 14px; color: #222; }
+    /* custom neutral checkbox: no colored fill, dark-gray checkmark only */
+    .ms-control input[type=checkbox] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border: 1.5px solid rgba(0,0,0,0.35);
+      border-radius: 4px;
+      background: transparent;
+      display: inline-block;
+      vertical-align: middle;
+      position: relative;
+      box-sizing: border-box;
+    }
+    .ms-control input[type=checkbox]:focus {
+      outline: 2px solid rgba(38,132,255,0.18);
+      outline-offset: 2px;
+    }
+    .ms-control input[type=checkbox]:checked::after {
+      content: '';
+      position: absolute;
+      left: 4px;
+      top: 1px;
+      width: 6px;
+      height: 10px;
+      border: solid #424242;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+      box-sizing: content-box;
+    }
     .ms-all-toggle { display:flex; align-items:center; gap:8px; flex:0 0 100%; margin-bottom:4px; }
     .ms-all-toggle input[type=checkbox] { position:absolute; opacity:0; width:0; height:0; }
     .ms-all-track { width:32px; height:16px; border-radius:999px; background:#ccc; position:relative; flex-shrink:0; transition: background .15s ease; }
@@ -155,7 +183,6 @@ controls_html = '''
     <div class="ms-control collapsed" id="ms-control">
       <div class="ms-control-header" style="display:flex;justify-content:space-between;align-items:center;">
           <div class="ms-left-header" style="display:flex;align-items:center;gap:8px;">
-            <button id="ms-submit-btn" class="ms-submit-btn" title="Nistplatz melden">Nistplatz melden</button>
             <h3>Karte der Gebäudebrüter in Berlin</h3>
           </div>
           <div class="ms-right-header" style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
@@ -172,9 +199,14 @@ controls_html = '''
           <h4>Filter Status</h4>
           <div class="ms-row" id="ms-status-row"></div>
         </div>
-        <div class="ms-row ms-reset-wrap" style="justify-content:space-between;">
-          <button id="ms-reset" title="Alle Marker zeigen">⟲ Filter zurücksetzen</button>
-          <button id="ms-apply-desktop" title="Filter anwenden">Filter anwenden</button>
+        <div class="ms-row ms-reset-wrap" style="display:flex;justify-content:space-between;align-items:flex-end;">
+          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;">
+            <button id="ms-apply-desktop" title="Filter anwenden">Filter anwenden</button>
+            <button id="ms-reset" title="Alle Marker zeigen">⟲ Filter zurücksetzen</button>
+          </div>
+          <div style="display:flex;align-items:center;">
+            <button id="ms-submit-btn" class="ms-submit-btn" title="Nistplatz melden">Nistplatz melden</button>
+          </div>
         </div>
       </div>
     </div>
@@ -422,8 +454,11 @@ controls_html = '''
             var id = prefix + '-' + name;
             var wrap = document.createElement('label'); wrap.style.display = 'flex'; wrap.style.alignItems = 'center';
             var cb = document.createElement('input'); cb.type = 'checkbox'; cb.value = name; cb.id = id; cb.className = 'ms-filter-species'; cb.checked = true;
-            var swatch = document.createElement('span'); swatch.style.display = 'inline-block'; swatch.style.width = '12px'; swatch.style.height = '12px'; swatch.style.borderRadius = '50%'; swatch.style.margin = '0 0 0 6px'; swatch.style.background = SPECIES_COLORS_JS[name];
-            wrap.appendChild(cb); wrap.appendChild(document.createTextNode(name)); wrap.appendChild(swatch);
+              var swatch = document.createElement('span'); swatch.style.display = 'inline-block'; swatch.style.width = '12px'; swatch.style.height = '12px'; swatch.style.borderRadius = '50%'; swatch.style.margin = '0 0 0 6px'; swatch.style.background = SPECIES_COLORS_JS[name]; swatch.style.boxSizing = 'border-box';
+            wrap.appendChild(cb);
+            var value = document.createElement('span'); value.className = 'ms-value'; value.textContent = name;
+            wrap.appendChild(value);
+            wrap.appendChild(swatch);
             return wrap;
           }
           sRow.appendChild(makeEntry('ms-sp'));
@@ -438,8 +473,11 @@ controls_html = '''
             var id = prefix + '-' + key;
             var wrap = document.createElement('label'); wrap.style.display = 'flex'; wrap.style.alignItems = 'center';
             var cb = document.createElement('input'); cb.type = 'checkbox'; cb.value = key; cb.id = id; cb.className = 'ms-filter-status'; cb.checked = true;
-            var swatch = document.createElement('span'); swatch.style.display = 'inline-block'; swatch.style.width = '12px'; swatch.style.height = '12px'; swatch.style.borderRadius = '4px'; swatch.style.margin = '0 0 0 6px'; swatch.style.background = info.color;
-            wrap.appendChild(cb); wrap.appendChild(document.createTextNode(info.label)); wrap.appendChild(swatch);
+            var swatch = document.createElement('span'); swatch.style.display = 'inline-block'; swatch.style.width = '12px'; swatch.style.height = '12px'; swatch.style.borderRadius = '50%'; swatch.style.margin = '0 0 0 6px'; swatch.style.background = 'transparent'; swatch.style.border = '2px solid ' + info.color; swatch.style.boxSizing = 'border-box';
+            wrap.appendChild(cb);
+            var value = document.createElement('span'); value.className = 'ms-value'; value.textContent = info.label;
+            wrap.appendChild(value);
+            wrap.appendChild(swatch);
             return wrap;
           }
           stRow.appendChild(makeEntry('ms-st'));
