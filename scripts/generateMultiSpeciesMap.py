@@ -583,13 +583,8 @@ controls_html = '''
       setTimeout(function(){ var selectedSpecies = Object.keys(SPECIES_COLORS_JS); var selectedStatus = Object.keys(STATUS_INFO_JS); rebuildCluster(selectedSpecies, selectedStatus); }, 250);
     })();
     </script>
-     # build a German month name for the title (e.g. "Februar 2026")
-     _stand_months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember']
-     _now = datetime.now()
-     _stand_date = f"{_stand_months[_now.month-1]} {_now.year}"
-     '''.replace('%SPECIES_COLORS_JSON%', json.dumps(SPECIES_COLORS, ensure_ascii=False))\
-       .replace('%STATUS_INFO_JSON%', json.dumps(STATUS_INFO, ensure_ascii=False))\
-       .replace('%STAND_DATE%', _stand_date)
+    '''.replace('%SPECIES_COLORS_JSON%', json.dumps(SPECIES_COLORS, ensure_ascii=False))\
+       .replace('%STATUS_INFO_JSON%', json.dumps(STATUS_INFO, ensure_ascii=False))
 
 
 def pick_primary_status(row):
@@ -754,8 +749,23 @@ def main():
     ).add_to(marker_cluster)
     count += 1
 
-  # inject last-scrape "Stand: mm.yyyy" into control title
-  controls_with_stand = controls_html.replace('<h3>Karte der Gebäudebrüter in Berlin</h3>', f'<h3>Karte der Gebäudebrüter in Berlin{stand_text}</h3>')
+  # prepare display date for title based on DB last update (use German month name)
+  _stand_months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember']
+  stand_display = ''
+  if last_raw:
+    try:
+      dt = datetime.strptime(last_raw.split('.')[0], '%Y-%m-%d %H:%M:%S') if ' ' in last_raw else datetime.strptime(last_raw, '%Y-%m-%d')
+      stand_display = f"{_stand_months[dt.month-1]} {dt.year}"
+    except Exception:
+      # fallback: try to extract year-month
+      try:
+        parts = last_raw.split('-')
+        if len(parts) >= 2:
+          stand_display = f"{parts[1]}.{parts[0]}"
+      except Exception:
+        stand_display = ''
+  # replace placeholder in the control HTML and inject
+  controls_with_stand = controls_html.replace('%STAND_DATE%', stand_display)
   m.get_root().html.add_child(folium.Element(controls_with_stand))
   m.get_root().html.add_child(folium.Element('<div style="position: fixed; bottom: 0; left: 0; background: white; padding: 4px; z-index:9999">Markers: ' + str(count) + '</div>'))
 
