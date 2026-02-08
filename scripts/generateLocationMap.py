@@ -103,7 +103,7 @@ for r in rows:
         subject = f"Kontrolle Gebäudebrüter-Standort: {r['strasse']}, {r['plz']} {r['ort']}"
         body = (
             "Hallo NABU-Team,\n"
-            f"an der Adresse: {r['strasse']}, {r['plz']} {r['ort']}, Fundort: {web_id} habe ich folgende Beobachtung gemacht:\n"
+            f"an der Adresse: {r['strasse']}, {r['plz']} {r['ort']}, Fundort-ID: {web_id} habe ich folgende Beobachtung gemacht:\n"
             "Beobachtete Vogelart(en):\n"
             "Anzahl der beobachteten Vögel:\n"
             "Nistplätze vorhanden: ja/nein\n"
