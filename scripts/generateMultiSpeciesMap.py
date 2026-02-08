@@ -583,9 +583,13 @@ controls_html = '''
       setTimeout(function(){ var selectedSpecies = Object.keys(SPECIES_COLORS_JS); var selectedStatus = Object.keys(STATUS_INFO_JS); rebuildCluster(selectedSpecies, selectedStatus); }, 250);
     })();
     </script>
+     # build a German month name for the title (e.g. "Februar 2026")
+     _stand_months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember']
+     _now = datetime.now()
+     _stand_date = f"{_stand_months[_now.month-1]} {_now.year}"
      '''.replace('%SPECIES_COLORS_JSON%', json.dumps(SPECIES_COLORS, ensure_ascii=False))\
        .replace('%STATUS_INFO_JSON%', json.dumps(STATUS_INFO, ensure_ascii=False))\
-       .replace('%STAND_DATE%', datetime.now().strftime('%m.%Y'))
+       .replace('%STAND_DATE%', _stand_date)
 
 
 def pick_primary_status(row):
