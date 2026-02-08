@@ -87,7 +87,11 @@ controls_html = '''
     .ms-left-header h3 { margin: 0; }
     .ms-collapse-btn { background: rgba(255,255,255,0.95); border: 1px solid rgba(0,0,0,0.06); font-size: 18px; padding: 8px; cursor: pointer; line-height: 1; position: absolute; top: 6px; right: 6px; z-index: 10010; touch-action: manipulation; -webkit-tap-highlight-color: transparent; pointer-events: auto; border-radius:6px; }
     .ms-open-sheet-btn { font-size:13px; padding:6px 8px; border-radius:6px; border:1px solid #ddd; background:#fff; cursor:pointer; }
-    .ms-toggle { cursor: pointer; display: inline-flex; align-items: center; gap:6px; font-size:13px; color:#0b66c3; user-select: none; }
+    .ms-toggle { cursor: pointer; display: inline-flex; align-items: center; gap:8px; font-size:15px; color:#0b66c3; user-select: none; }
+    .ms-toggle .arrow { display: none; }
+    /* Filter button: blue border when control is expanded, transparent when collapsed */
+    .ms-control:not(.collapsed) .ms-open-sheet-btn { border-color: var(--ms-accent); box-shadow: 0 6px 18px rgba(25,118,210,0.08); }
+    .ms-control.collapsed .ms-open-sheet-btn { border-color: transparent; box-shadow: none; }
     .ms-control button, .ms-control .ms-open-sheet-btn, .ms-control .ms-toggle { transition: background .15s, box-shadow .12s, transform .08s; }
     .ms-control button:focus, .ms-control .ms-open-sheet-btn:focus, .ms-control .ms-toggle:focus { outline: 2px solid var(--ms-focus); outline-offset: 2px; }
     .ms-toggle .arrow { display:inline-block; transition: transform .15s ease; }
