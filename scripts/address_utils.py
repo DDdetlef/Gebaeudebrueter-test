@@ -51,9 +51,35 @@ def sanitize_street(s: str) -> Tuple[str, Dict[str,int], str]:
         blacklist = re.compile(r"\b(hotel|schule|grundschule|kita|kindergarten|hinterhof|hof|höfe|hofe|zentrum|center|apartment|wohnung|büro|restaurant|hostel|hostal|ibis)\b", re.IGNORECASE)
         street_kw = re.compile(r"\b(strasse|straße|str\.?|weg\b|allee\b|platz\b|gasse\b|ring\b|chaussee\b|ufer\b)\b", re.IGNORECASE)
 
-        # Per policy: do not keep any trailing text after the house number.
-        # Always discard `rest` and keep only `street_before` + `number`.
-        flags['kept_text_after_number'] = 0
+        # Determine whether rest is descriptive text or a house-number suffix.
+        def _rest_is_house_suffix(text: str) -> bool:
+            t = (text or '').strip()
+            if not t:
+                return False
+            # single-letter tokens or letter ranges like 'a-c', 'a,b,d', '+b' count as suffix
+            # allow plus or hyphen/comma separators
+            return bool(re.match(r"^[\s,]*[+\-]?[A-Za-z](?:\s*[-–]\s*[A-Za-z])?(?:\s*(?:,|\s)\s*[+\-]?[A-Za-z](?:\s*[-–]\s*[A-Za-z])?)*[\s,]*$", t))
+
+        # If rest begins with a numeric range (e.g. '-13' or '/13'), fold it into the house number
+        range_match = re.match(r"^\s*([-–/])\s*(\d+[A-Za-z]?)", rest)
+        if range_match:
+            sep = range_match.group(1)
+            range_num = range_match.group(2)
+            # append normalized range to number (e.g. '10-13')
+            number = f"{number}{sep}{range_num}"
+            # remove the consumed part from rest
+            rest = _normalize_ws(rest[range_match.end():] or '')
+            flags['has_range'] = 1
+
+        # Decide if rest should be considered descriptive text after number.
+        is_house_suffix = _rest_is_house_suffix(rest)
+        # If rest still contains digits after attempting to consume a numeric range, treat it conservatively
+        if rest and not is_house_suffix and not street_kw.search(rest) and not re.search(r"\d", rest):
+            flags['flag_has_text_after_number'] = 1
+        else:
+            flags['flag_has_text_after_number'] = 0
+
+        # Per policy: do not keep any trailing descriptive text after the house number in cleaned street.
         cleaned = f"{street_before} {number}".strip()
     else:
         cleaned = pick.split(',')[0].strip()
@@ -77,10 +103,16 @@ def geocode_with_fallbacks(geocode_callable: Callable[[str], Optional[object]], 
         if ',' in cleaned:
             variants.append(f"{cleaned.split(',')[0].strip()}, {plz}, {ort}, Deutschland")
         # try street+num only (strip trailing text)
-        m = re.match(r"^(.*?\D)?(\d+[A-Za-z]?)(.*)$", cleaned)
+        m = re.match(r"^(.*?\D)?(\d+[A-Za-z0-9\-–/]*)(.*)$", cleaned)
         if m:
             street_before = (m.group(1) or '').strip()
-            number = m.group(2).strip()
+            number_raw = m.group(2).strip()
+            # when number contains a range (e.g. '10-13' or '/13'), use the first number for geocoding
+            num_match = re.match(r"^(\d+[A-Za-z]?)", number_raw)
+            if num_match:
+                number = num_match.group(1)
+            else:
+                number = number_raw
             variants.append(f"{street_before} {number}, {plz}, {ort}, Deutschland")
             variants.append(f"{street_before} {number} {ort}, Deutschland")
     # fallback to plz+ort

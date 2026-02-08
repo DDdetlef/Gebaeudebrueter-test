@@ -74,9 +74,15 @@ for r in rows:
 
     text_after = None
     m2 = re.search(r"^(.*?\D)?(\d+[A-Za-z]?)(.*)$", pick)
+    def _rest_is_house_suffix(text: str) -> bool:
+        t = (text or '').strip()
+        if not t:
+            return False
+        return bool(re.match(r"^[\s,]*[+\-]?[A-Za-z](?:\s*[-–]\s*[A-Za-z])?(?:\s*(?:,|\s)\s*[+\-]?[A-Za-z](?:\s*[-–]\s*[A-Za-z])?)*[\s,]*$", t))
+
     if m2:
         rest = _normalize_ws(m2.group(3) or '')
-        if rest and not street_kw.search(rest):
+        if rest and not street_kw.search(rest) and not _rest_is_house_suffix(rest) and not re.search(r"\d", rest):
             flags['flag_has_text_after_number'] = 1
             text_after = rest
 

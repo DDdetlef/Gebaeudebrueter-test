@@ -546,7 +546,7 @@ def main():
   m.add_child(marker_cluster)
 
   query = (
-    "SELECT b.web_id, b.bezirk, b.plz, b.ort, b.strasse, b.anhang, b.erstbeobachtung, b.beschreibung, b.besonderes, "
+    "SELECT b.web_id, b.bezirk, b.plz, b.ort, b.strasse, b.strasse_original, b.anhang, b.erstbeobachtung, b.beschreibung, b.besonderes, "
     "b.mauersegler, b.sperling, b.schwalbe, b.fledermaus, b.star, b.andere, "
     "b.sanierung, b.ersatz, b.kontrolle, b.verloren, "
     "o.latitude AS osm_latitude, o.longitude AS osm_longitude, gg.latitude AS google_latitude, gg.longitude AS google_longitude "
@@ -584,16 +584,18 @@ def main():
     fund_text = ', '.join(species) if species else 'andere Art'
     status_names = [STATUS_INFO[k]['label'] for k in all_statuses]
     status_text = ', '.join(status_names) if status_names else '—'
+    # prefer original street entry for display when present
+    addr_field = r['strasse_original'] if (r['strasse_original'] and str(r['strasse_original']).strip()) else r['strasse']
     popup_html = (
       f"<b>Arten</b><br/>{fund_text}"
       f"<br/><br/><b>Status</b><br/>{status_text}"
-      f"<br/><br/><b>Adresse</b><br/>{r['strasse']}, {r['plz']} {r['ort']}"
+      f"<br/><br/><b>Adresse</b><br/>{addr_field}, {r['plz']} {r['ort']}"
       f"<br/><br/><b>Erstbeobachtung</b><br/>{(str(r['erstbeobachtung']) if r['erstbeobachtung'] else 'unbekannt')}"
       f"<br/><br/><b>Beschreibung</b><br/>{(r['beschreibung'] or '')}"
       f"<br/><br/><b>Link zur Datenbank</b><br/><a href={url}?ID={r['web_id']}>{r['web_id']}</a>"
     )
 
-    address_text = f"{r['strasse']}, {r['plz']} {r['ort']}"
+    address_text = f"{addr_field}, {r['plz']} {r['ort']}"
     icon_html = build_divicon_html(species, primary_status, all_statuses, address_text)
     icon = folium.DivIcon(html=icon_html, icon_size=(26, 26), icon_anchor=(13, 13))
 

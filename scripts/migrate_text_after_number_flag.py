@@ -42,6 +42,13 @@ street_kw = re.compile(r"\b(strasse|straße|str\.?|weg\b|allee\b|platz\b|gasse\b
 
 updated = 0
 checked = 0
+def _rest_is_house_suffix(text: str) -> bool:
+    t = (text or '').strip()
+    if not t:
+        return False
+    return bool(re.match(r"^[\s,]*[+\-]?[A-Za-z](?:\s*[-–]\s*[A-Za-z])?(?:\s*(?:,|\s)\s*[+\-]?[A-Za-z](?:\s*[-–]\s*[A-Za-z])?)*[\s,]*$", t))
+
+
 for web_id, orig, s in cur.execute('SELECT web_id, strasse_original, strasse FROM gebaeudebrueter'):
     checked += 1
     db_orig = (orig or '').strip()
@@ -61,17 +68,26 @@ for web_id, orig, s in cur.execute('SELECT web_id, strasse_original, strasse FRO
         # nothing to do
         continue
     m = re.search(r"^(.*?\D)?(\d+[A-Za-z]?)(.*)$", chosen)
-    text_after = ''
+    text_after = None
     has_text_after = 0
     if m:
         rest = _normalize_ws(m.group(3) or '')
-        # consider it text after number only if non-empty and NOT a second street
-        if rest and not street_kw.search(rest):
+        # If rest begins with a numeric range like '-13' or '/13', treat as range
+        range_match = re.match(r"^\s*[-–/]\s*\d+", rest)
+        has_range_db = 1 if range_match else 0
+        # consider it text after number only if non-empty, NOT a second street, NOT a house-suffix pattern, and not containing digits
+        if rest and not street_kw.search(rest) and not _rest_is_house_suffix(rest) and not re.search(r"\d", rest):
             text_after = rest
             has_text_after = 1
-    # update row if needed
+        else:
+            has_text_after = 0
+    # always write flag/text (clear when not present)
+    # update text_after_number and flag_has_text_after_number; if we detected a range, set has_range
+    if 'has_range_db' in locals() and has_range_db:
+        cur.execute('UPDATE gebaeudebrueter SET flag_has_text_after_number = ?, text_after_number = ?, has_range = 1 WHERE web_id = ?', (has_text_after, text_after, web_id))
+    else:
+        cur.execute('UPDATE gebaeudebrueter SET flag_has_text_after_number = ?, text_after_number = ? WHERE web_id = ?', (has_text_after, text_after, web_id))
     if has_text_after:
-        cur.execute('UPDATE gebaeudebrueter SET flag_has_text_after_number = 1, text_after_number = ? WHERE web_id = ?', (text_after, web_id))
         updated += 1
 
 conn.commit()
