@@ -79,7 +79,8 @@ controls_html = '''
     .ms-all-toggle input[type=checkbox]:checked + .ms-all-track { background:#1976d2; }
     .ms-all-toggle input[type=checkbox]:checked + .ms-all-track .ms-all-thumb { transform: translateX(16px); }
     /* small submit button next to help */
-    .ms-submit-btn { font-size:13px; padding:6px 8px; border-radius:6px; border:1px solid transparent; background:#fff; cursor:pointer; color:#1976d2; }
+    .ms-submit-btn { font-size:13px; padding:6px 8px; border-radius:6px; border:1px solid #1976d2; background:#fff; cursor:pointer; color:#1976d2; }
+    .ms-submit-btn:hover { background: #f5fbff; }
     .ms-submit-cta { display:inline-block; padding:6px 10px; border-radius:6px; border:1px solid #1976d2; background:#1976d2; color:#fff; text-decoration:none; }
     .ms-badge { display: none; }
     .ms-hidden { display: none !important; }
