@@ -5,7 +5,7 @@ import re
 import requests
 from geopy.geocoders import Nominatim
 from urllib.parse import urlencode
-from address_utils import sanitize_street
+from address_utils import sanitize_street, geocode_with_fallbacks
 
 MISSING_CSV = 'reports/missing_coords.csv'
 OUT_CSV = 'reports/geocode_missing_results.csv'
@@ -46,6 +46,13 @@ for r in rows:
     lon = ''
     status = ''
 
+    # If no street provided, skip geocoding entirely
+    if not cleaned:
+        results.append({'web_id': web_id, 'address': addr, 'provider': 'none', 'lat': '', 'lon': '', 'status': 'NO_STREET'})
+        count += 1
+        none += 1
+        continue
+
     # Try Google first if key available
     if GOOGLE_KEY:
         params = {'address': addr, 'key': GOOGLE_KEY}
@@ -72,20 +79,17 @@ for r in rows:
 
     # If not found via Google, try OSM
     if not found:
-        try:
-            loc = geolocator.geocode(addr, addressdetails=False, exactly_one=True, timeout=10)
-            if loc:
-                lat = loc.latitude
-                lon = loc.longitude
-                provider = 'osm'
-                status = 'OK'
-                osm_success += 1
-                found = True
-            else:
-                status = status or 'ZERO_RESULTS'
-                none += 1
-        except Exception as e:
-            status = status or 'osm_error'
+        # Use geocode_with_fallbacks to try variants against Nominatim
+        loc, used = geocode_with_fallbacks(lambda a: geolocator.geocode(a, addressdetails=False, exactly_one=True, timeout=10), cleaned, plz or '', ort or 'Berlin')
+        if loc:
+            lat = getattr(loc, 'latitude', None)
+            lon = getattr(loc, 'longitude', None)
+            provider = 'osm'
+            status = 'OK'
+            osm_success += 1
+            found = True
+        else:
+            status = status or 'ZERO_RESULTS'
             none += 1
         time.sleep(1)
 

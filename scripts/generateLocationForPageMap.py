@@ -86,21 +86,30 @@ for (web_id, strasse, ort, plz, beschreibung) in data:
     if limit is not None and index >= limit:
         break
     clean_strasse, flags, original_strasse = sanitize_street(str(strasse))
-    # Try geocoding with fallback variants using the RateLimiter-wrapped geocode callable
-    time.sleep(random.uniform(0.05, 0.25))
-    try:
-        location, used_addr = geocode_with_fallbacks(lambda a: geocode(a, timeout=10), clean_strasse, plz or '', ort or 'Berlin', max_attempts=max_retries, pause=min_delay)
-    except Exception as e:
-        print(f"OSM geocode error for {web_id}: {e}.")
-        location = None
-    point = tuple(location.point) if location else (None, None, None)
-    latitude = str(point[0])
-    longitude = str(point[1])
-    query = ('INSERT OR REPLACE INTO geolocation_osm'
-             '(web_id, longitude, latitude, location, complete_response)'
-             'VALUES (?,?,?,?,?)')
-    value = (web_id, longitude, latitude, str(location), str(location))
-    cursor.execute(query, value)
+    # If no street present after cleaning, skip geocoding (do not geocode by PLZ only)
+    location = None
+    if clean_strasse:
+        # Try geocoding with fallback variants using the RateLimiter-wrapped geocode callable
+        time.sleep(random.uniform(0.05, 0.25))
+        try:
+            location, used_addr = geocode_with_fallbacks(lambda a: geocode(a, timeout=10), clean_strasse, plz or '', ort or 'Berlin', max_attempts=max_retries, pause=min_delay)
+        except Exception as e:
+            print(f"OSM geocode error for {web_id}: {e}.")
+            location = None
+    else:
+        print(f"Skipping geocode for web_id {web_id}: no street provided")
+    if location:
+        point = tuple(location.point)
+        latitude = str(point[0])
+        longitude = str(point[1])
+        query = ('INSERT OR REPLACE INTO geolocation_osm'
+                 '(web_id, longitude, latitude, location, complete_response)'
+                 'VALUES (?,?,?,?,?)')
+        value = (web_id, longitude, latitude, str(location), str(location))
+        cursor.execute(query, value)
+    else:
+        latitude = None
+        longitude = None
     print(f'{web_id} {address}')
     if gmaps:
         try:

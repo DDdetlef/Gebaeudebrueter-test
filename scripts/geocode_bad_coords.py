@@ -46,7 +46,7 @@ if GOOGLE_KEY:
         GMAPS = None
 
 
-from address_utils import sanitize_street
+from address_utils import sanitize_street, geocode_with_fallbacks
 
 
 def get_address_for_web_id(cur, web_id: int) -> Optional[str]:
@@ -59,24 +59,19 @@ def get_address_for_web_id(cur, web_id: int) -> Optional[str]:
     clean_strasse = cleaned
     if clean_strasse:
         return f"{clean_strasse}, {plz or ''}, {ort or 'Berlin'}, Deutschland"
-    return f"{plz or ''}, {ort or 'Berlin'}, Deutschland"
+    # no street present -> do not geocode by PLZ only
+    return None
 
 
 def geocode_address(address: str):
-    osm_loc = None
-    try:
-        osm_loc = geocode(address, timeout=10)
-    except (GeocoderTimedOut, GeocoderServiceError, GeocoderUnavailable) as e:
-        time.sleep(error_wait)
-        try:
-            osm_loc = geocode(address, timeout=10)
-        except Exception:
-            osm_loc = None
+    # Try OSM with fallback variants
+    osm_loc, used_addr = geocode_with_fallbacks(lambda a: geocode(a, timeout=10), address, '', '', max_attempts=max_retries, pause=min_delay)
     lat = str(osm_loc.latitude) if osm_loc else ''
     lon = str(osm_loc.longitude) if osm_loc else ''
     prov = 'osm' if osm_loc else 'none'
     status = 'OK' if osm_loc else 'ZERO_RESULTS'
 
+    # If no OSM result, try Google if available
     if GMAPS and not osm_loc:
         try:
             results = GMAPS.geocode(address)
@@ -88,7 +83,7 @@ def geocode_address(address: str):
                 status = 'OK'
             else:
                 status = 'ZERO_RESULTS'
-        except Exception as e:
+        except Exception:
             status = 'GOOGLE_ERROR'
     return lat, lon, prov, status
 

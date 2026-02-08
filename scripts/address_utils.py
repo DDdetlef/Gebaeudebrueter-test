@@ -51,31 +51,10 @@ def sanitize_street(s: str) -> Tuple[str, Dict[str,int], str]:
         blacklist = re.compile(r"\b(hotel|schule|grundschule|kita|kindergarten|hinterhof|hof|höfe|hofe|zentrum|center|apartment|wohnung|büro|restaurant|hostel|hostal|ibis)\b", re.IGNORECASE)
         street_kw = re.compile(r"\b(strasse|straße|str\.?|weg\b|allee\b|platz\b|gasse\b|ring\b|chaussee\b|ufer\b)\b", re.IGNORECASE)
 
-        # Decide whether to keep rest
-        if re.search(r"[A-Za-z]", number) and not number.isdigit():
-            keep_rest = False
-        elif not rest:
-            keep_rest = False
-        elif re.search(r"\d", rest):
-            keep_rest = False
-        elif re.search(r"\d+[A-Za-z]", rest):
-            keep_rest = False
-        elif blacklist.search(rest):
-            keep_rest = False
-        elif len(rest.split()) > 4:
-            keep_rest = False
-        elif street_kw.search(rest):
-            # likely a second street name — mark but don't keep
-            flags['multiple_streets'] = 1
-            keep_rest = False
-        else:
-            keep_rest = True
-
-        if keep_rest:
-            flags['kept_text_after_number'] = 1
-            cleaned = f"{street_before} {number} {rest}".strip()
-        else:
-            cleaned = f"{street_before} {number}".strip()
+        # Per policy: do not keep any trailing text after the house number.
+        # Always discard `rest` and keep only `street_before` + `number`.
+        flags['kept_text_after_number'] = 0
+        cleaned = f"{street_before} {number}".strip()
     else:
         cleaned = pick.split(',')[0].strip()
 
