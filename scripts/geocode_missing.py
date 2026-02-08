@@ -5,6 +5,7 @@ import re
 import requests
 from geopy.geocoders import Nominatim
 from urllib.parse import urlencode
+from address_utils import sanitize_street
 
 MISSING_CSV = 'reports/missing_coords.csv'
 OUT_CSV = 'reports/geocode_missing_results.csv'
@@ -16,25 +17,7 @@ if not GOOGLE_KEY and os.path.exists('api.key'):
 geolocator = Nominatim(user_agent='gebauedebrueter_geocoder')
 
 
-def _normalize_ws(s: str) -> str:
-    return re.sub(r"\s+", " ", s or "").strip()
-
-
-def sanitize_street(s: str) -> str:
-    s = _normalize_ws(s)
-    s = re.sub(r"\([^)]*\)", "", s).strip()
-    parts = re.split(r"[;/|]", s)
-    pick = None
-    for p in parts:
-        p2 = _normalize_ws(p)
-        if re.search(r"\d", p2):
-            pick = p2
-            break
-    if pick is None and parts:
-        pick = _normalize_ws(parts[0])
-    s = pick or ''
-    s = s.split(',')[0].strip()
-    return s
+# using centralized sanitize_street from address_utils
 
 results = []
 
@@ -50,7 +33,8 @@ none = 0
 
 for r in rows:
     web_id = r.get('web_id')
-    strasse = sanitize_street(r.get('strasse') or '')
+    cleaned, flags, original = sanitize_street(r.get('strasse') or '')
+    strasse = cleaned
     plz = (r.get('plz') or '').strip()
     ort = r.get('ort') or 'Berlin'
     # build address

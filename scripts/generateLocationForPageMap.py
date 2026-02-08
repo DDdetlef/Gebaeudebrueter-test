@@ -8,26 +8,7 @@ import os
 import re
 import sys
 import random
-
-def _normalize_ws(s: str) -> str:
-    return re.sub(r"\s+", " ", s or "").strip()
-
-
-def sanitize_street(s: str) -> str:
-    s = _normalize_ws(s)
-    s = re.sub(r"\([^)]*\)", "", s).strip()
-    parts = re.split(r"[;/|]", s)
-    pick = None
-    for p in parts:
-        p2 = _normalize_ws(p)
-        if re.search(r"\d", p2):
-            pick = p2
-            break
-    if pick is None and parts:
-        pick = _normalize_ws(parts[0])
-    s = pick or ''
-    s = s.split(',')[0].strip()
-    return s
+from address_utils import sanitize_street, geocode_with_fallbacks
 
 db_path = 'brueter.sqlite'
 for arg in sys.argv[1:]:
@@ -58,7 +39,7 @@ if key:
 else:
     print('WARN: No Google API key found. Proceeding with OSM-only geocoding.')
 
-cursor.execute('SELECT web_id, strasse, ort, plz from gebaeudebrueter where new=1')
+cursor.execute('SELECT web_id, strasse, ort, plz, beschreibung from gebaeudebrueter where new=1')
 data = cursor.fetchall()
 # only updates new entries which are set to new=1
 
@@ -101,26 +82,17 @@ for arg in sys.argv[1:]:
             limit = int(arg.split("=", 1)[1])
         except Exception:
             pass
-for (web_id, strasse, ort, plz) in data:
+for (web_id, strasse, ort, plz, beschreibung) in data:
     if limit is not None and index >= limit:
         break
-    clean_strasse = sanitize_street(str(strasse))
-    if clean_strasse:
-        address = f"{clean_strasse}, {plz}, {ort}, Deutschland"
-    else:
-        address = f"{plz}, {ort}, Deutschland"
-    # Add small jitter to avoid a perfectly regular request pattern
+    clean_strasse, flags, original_strasse = sanitize_street(str(strasse))
+    # Try geocoding with fallback variants using the RateLimiter-wrapped geocode callable
     time.sleep(random.uniform(0.05, 0.25))
     try:
-        location = geocode(address, timeout=10)
-    except (GeocoderTimedOut, GeocoderServiceError, GeocoderUnavailable) as e:
-        print(f"OSM geocode error for {web_id}: {e}. Backing off and retrying once.")
-        time.sleep(10)
-        try:
-            location = geocode(address, timeout=10)
-        except Exception as e2:
-            print(f"OSM geocode failed again for {web_id}: {e2}")
-            location = None
+        location, used_addr = geocode_with_fallbacks(lambda a: geocode(a, timeout=10), clean_strasse, plz or '', ort or 'Berlin', max_attempts=max_retries, pause=min_delay)
+    except Exception as e:
+        print(f"OSM geocode error for {web_id}: {e}.")
+        location = None
     point = tuple(location.point) if location else (None, None, None)
     latitude = str(point[0])
     longitude = str(point[1])
@@ -149,9 +121,40 @@ for (web_id, strasse, ort, plz) in data:
             print(f"Google geocode API error for {web_id}: {e}")
         except Exception as e:
             print(f"Google geocode failed for {web_id}: {e}")
-    query = ('UPDATE gebaeudebrueter set new=0 where web_id=?')
-    value = (web_id,)
-    cursor.execute(query, value)
+    # If the cleaned street differs from the original, prepend the original as source
+    new_beschreibung = beschreibung
+    try:
+        orig = (original_strasse or '').strip()
+    except Exception:
+        orig = ''
+    if orig and orig != (str(strasse) or '').strip() and orig != clean_strasse:
+        prefix = f"(Quelle: {orig}) "
+        if not new_beschreibung:
+            new_beschreibung = prefix
+        elif not new_beschreibung.startswith(prefix):
+            new_beschreibung = prefix + new_beschreibung
+
+    # Persist flags and original street into gebaeudebrueter. Columns may be added via migration helper.
+    query = ('UPDATE gebaeudebrueter SET new=0, strasse_original=?, has_comma=?, has_slash=?, has_range=?, '
+             'multiple_numbers=?, multiple_streets=?, kept_text_after_number=?, beschreibung=? WHERE web_id=?')
+    value = (
+        original_strasse,
+        flags.get('has_comma', 0),
+        flags.get('has_slash', 0),
+        flags.get('has_range', 0),
+        flags.get('multiple_numbers', 0),
+        flags.get('multiple_streets', 0),
+        flags.get('kept_text_after_number', 0),
+        new_beschreibung,
+        web_id,
+    )
+    try:
+        cursor.execute(query, value)
+    except sqlite3.OperationalError as e:
+        # If columns do not exist yet, fall back to updating only new flag.
+        print(f"DB update warning (missing columns?): {e}. Updating only new flag.")
+        query2 = ('UPDATE gebaeudebrueter set new=0 where web_id=?')
+        cursor.execute(query2, (web_id,))
     sqliteConnection.commit()
     print(f'{len(data)}, {index}')
     index += 1

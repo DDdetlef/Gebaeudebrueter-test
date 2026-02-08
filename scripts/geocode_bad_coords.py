@@ -46,25 +46,7 @@ if GOOGLE_KEY:
         GMAPS = None
 
 
-def _normalize_ws(s: str) -> str:
-    return re.sub(r"\s+", " ", s or "").strip()
-
-
-def sanitize_street(s: str) -> str:
-    s = _normalize_ws(s)
-    s = re.sub(r"\([^)]*\)", "", s).strip()
-    parts = re.split(r"[;/|]", s)
-    pick = None
-    for p in parts:
-        p2 = _normalize_ws(p)
-        if re.search(r"\d", p2):
-            pick = p2
-            break
-    if pick is None and parts:
-        pick = _normalize_ws(parts[0])
-    s = pick or ''
-    s = s.split(',')[0].strip()
-    return s
+from address_utils import sanitize_street
 
 
 def get_address_for_web_id(cur, web_id: int) -> Optional[str]:
@@ -73,7 +55,8 @@ def get_address_for_web_id(cur, web_id: int) -> Optional[str]:
     if not row:
         return None
     strasse, plz, ort = row
-    clean_strasse = sanitize_street(str(strasse)) if strasse is not None else ''
+    cleaned, flags, original = sanitize_street(str(strasse)) if strasse is not None else ('', {}, '')
+    clean_strasse = cleaned
     if clean_strasse:
         return f"{clean_strasse}, {plz or ''}, {ort or 'Berlin'}, Deutschland"
     return f"{plz or ''}, {ort or 'Berlin'}, Deutschland"
