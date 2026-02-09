@@ -28,6 +28,15 @@
     a.style.lineHeight = '1.2';
     a.style.color = '#333';
     a.style.fontFamily = 'Arial, sans-serif';
+
+    // Make button a bit larger on small/mobile screens
+    try {
+      if (window.matchMedia && window.matchMedia('(max-width: 600px)').matches) {
+        a.style.width = '60px';
+        a.style.height = '60px';
+        a.style.padding = '8px';
+      }
+    } catch(e){}
     var img = document.createElement('img');
     img.src = 'images/edit.png';
     img.alt = 'Feedback';
@@ -40,7 +49,8 @@
       console.log('gb_feedback: image failed, using text fallback');
       a.innerHTML = 'Feedback';
       a.style.fontSize = '10px';
-      a.style.paddingTop = '16px';
+      // Center text roughly in taller button as well
+      a.style.paddingTop = (window.matchMedia && window.matchMedia('(max-width: 600px)').matches) ? '22px' : '16px';
     };
     a.appendChild(img);
     // Add some accessible label for screen readers
