@@ -87,7 +87,7 @@ Prerequisites: install Python deps and have `brueter.sqlite` populated.
 
 ```bash
 # Using the project venv
-C:/Users/2andr/Documents/VisualStudioCode_Projekte/Gebaeudebrueter-master/.venv/Scripts/python.exe scripts/generateMultiSpeciesMap.py
+scripts/generateMultiSpeciesMap.py
 
 # The HTML is written to:
 #   GebaeudebrueterMultiMarkers.html
