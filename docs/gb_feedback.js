@@ -29,12 +29,12 @@
     a.style.color = '#333';
     a.style.fontFamily = 'Arial, sans-serif';
 
-    // Make button a bit larger on small/mobile screens
+    // Make button clearly larger on small/mobile screens
     try {
       if (window.matchMedia && window.matchMedia('(max-width: 600px)').matches) {
-        a.style.width = '60px';
-        a.style.height = '60px';
-        a.style.padding = '8px';
+        a.style.width = '72px';
+        a.style.height = '72px';
+        a.style.padding = '10px';
       }
     } catch(e){}
     var img = document.createElement('img');
@@ -48,9 +48,9 @@
     img.onerror = function(){
       console.log('gb_feedback: image failed, using text fallback');
       a.innerHTML = 'Feedback';
-      a.style.fontSize = '10px';
+      a.style.fontSize = '11px';
       // Center text roughly in taller button as well
-      a.style.paddingTop = (window.matchMedia && window.matchMedia('(max-width: 600px)').matches) ? '22px' : '16px';
+      a.style.paddingTop = (window.matchMedia && window.matchMedia('(max-width: 600px)').matches) ? '26px' : '16px';
     };
     a.appendChild(img);
     // Add some accessible label for screen readers
