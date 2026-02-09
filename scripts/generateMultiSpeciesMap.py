@@ -842,20 +842,29 @@ def main():
 
     # add a mailto button so users can report observations via their email app
     try:
-      subject = f"Kontrolle Gebäudebrüter-Standort: {addr_field}"
+      web_id = r['web_id']
+      full_address = f"{addr_field}, {r['plz']} {r['ort']}".strip().strip(',')
+      if not full_address or full_address.lower() == 'none':
+        full_address = 'Adresse unbekannt'
+
+      subject = f"Kontrolle Gebäudebrüter-Standort: Fundort-ID {web_id}"
       body = (
-        "Hallo NABU-Team,\n"
-        f"an der Adresse: {addr_field}, {r['plz']} {r['ort']}, Fundort: {r['web_id']} habe ich folgende Beobachtung gemacht:\n"
-        "Beobachtete Vogelart(en):\n"
-        "Anzahl der beobachteten Vögel:\n"
-        "Nistplätze vorhanden: ja/nein\n"
-        "Fotos im Anhang: ja/nein\n"
-        "Eigene Beschreibung: \n\n"
-        "Viele Grüße,\n"
+        "Hallo NABU-Team,\n\n"
+        f"ich möchte folgende Beobachtung an der Adresse: {full_address}, Fundort-ID: {web_id} an den NABU melden.\n\n"
+        "Beobachtete Vogelart(en):\n\n"
+        "Anzahl der beobachteten Vögel:\n\n"
+        "Nistplätze vorhanden: ja/nein\n\n"
+        "Fotos im Anhang: ja/nein\n\n"
+        "Eigene Beschreibung (mögliche Gefährdung):\n\n\n"
+        "Mein Name:\n"
+        "PLZ, Wohnort:\n"
+        "Straße, Hausnummer:\n\n\n"
+        "Viele Grüße,\n\n\n"
+        "Hinweis zum Datenschutz: Der NABU erhebt und verarbeitet Ihre personenbezogenen Daten ausschließlich für Vereinszwecke. Dabei werden Ihre Daten - gegebenenfalls durch Beauftragte - auch für NABU-eigene Informationszwecke verarbeitet und genutzt. Eine Weitergabe an Dritte erfolgt niemals. Der Verwendung Ihrer Daten kann jederzeit schriftlich oder per E-Mail an lvberlin@nabu-berlin.de widersprochen werden.\n"
       )
-      mailto = f"mailto:detlefdev@gmail.com?subject={quote(subject)}&body={quote(body)}"
+      mailto = f"mailto:detlefdev@gmail.com?subject={quote(subject, safe='')}&body={quote(body, safe='')}"
       popup_html += (
-        f"<br/><br/><a href=\"{mailto}\" target=\"_blank\" rel=\"noreferrer\" "
+        f"<br/><br/><a href=\"{mailto}\" target=\"_blank\" rel=\"noreferrer\" onclick=\"return gbHumanConfirmReport(event, {web_id}, this.href);\" "
         f"style=\"display:inline-block;padding:6px 10px;border-radius:6px;border:1px solid #1976d2;"
         f"background:#1976d2;color:#fff;text-decoration:none;\">Beobachtung melden</a>"
       )
@@ -893,6 +902,84 @@ def main():
   # replace placeholder in the control HTML and inject
   controls_with_stand = controls_html.replace('%STAND_DATE%', stand_display)
   m.get_root().html.add_child(folium.Element(controls_with_stand))
+  m.get_root().html.add_child(folium.Element(
+    '<style>'
+    '.gb-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:99999;}'
+    '.gb-modal{background:#fff;border-radius:10px;max-width:420px;width:calc(100vw - 32px);box-shadow:0 10px 30px rgba(0,0,0,.25);padding:14px 16px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;}'
+    '.gb-modal h3{margin:0 0 8px 0;font-size:16px;}'
+    '.gb-modal p{margin:0 0 10px 0;font-size:13px;line-height:1.35;color:#333;}'
+    '.gb-modal label{display:block;font-size:12px;color:#333;margin:8px 0 4px;}'
+    '.gb-modal input[type="text"], .gb-modal input[type="search"], .gb-modal input[type="email"], .gb-modal input[type="number"], .gb-modal textarea{width:100%;padding:8px 10px;border:1px solid #ccc;border-radius:8px;font-size:13px;}'
+    '.gb-modal .gb-error{display:none;color:#b00020;font-size:12px;margin-top:6px;}'
+    '.gb-modal .gb-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;}'
+    '.gb-modal button{border:0;border-radius:8px;padding:8px 10px;font-size:13px;cursor:pointer;}'
+    '.gb-modal .gb-cancel{background:#eee;color:#333;}'
+    '.gb-modal .gb-confirm{background:#1976d2;color:#fff;}'
+    '</style>'
+    '<div id="gbModalOverlay" class="gb-modal-overlay" role="dialog" aria-modal="true">'
+    '  <div class="gb-modal">'
+    '    <h3>Beobachtung melden</h3>'
+    '    <p>Bitte bestätige zur Sicherheit die Fundort-ID, bevor dein E-Mail-Programm geöffnet wird.</p>'
+    '    <div><b>Fundort-ID:</b> <span id="gbModalExpectedId">—</span></div>'
+    '    <label for="gbModalInput">Fundort-ID eingeben</label>'
+    '    <input id="gbModalInput" type="text" inputmode="numeric" autocomplete="off" />'
+    '    <div style="margin-top:8px;"><label>Ich bin kein Bot <input id="gbModalCheckbox" type="checkbox" style="margin-left:8px;vertical-align:middle;" /></label></div>'
+    '    <div id="gbModalError" class="gb-error">Fundort-ID stimmt nicht.</div>'
+    '    <div class="gb-actions">'
+    '      <button type="button" class="gb-cancel" onclick="gbModalClose()">Abbrechen</button>'
+    '      <button id="gbModalConfirmBtn" type="button" class="gb-confirm" onclick="gbModalConfirm()" disabled>E-Mail öffnen</button>'
+    '    </div>'
+    '  </div>'
+    '</div>'
+    '<script>'
+    'var gbModalState = { expectedId: null, href: null };'
+    'function gbModalOpen(expectedId, href){'
+    '  gbModalState.expectedId = String(expectedId);'
+    '  gbModalState.href = href;'
+    '  var ov = document.getElementById("gbModalOverlay");'
+    '  document.getElementById("gbModalExpectedId").textContent = gbModalState.expectedId;'
+    '  var inp = document.getElementById("gbModalInput");'
+    '  inp.value = "";'
+    '  var cb = document.getElementById("gbModalCheckbox"); if (cb) { cb.checked = false; }'
+    '  var btn = document.getElementById("gbModalConfirmBtn"); if (btn) { btn.disabled = true; }'
+    '  document.getElementById("gbModalError").style.display = "none";'
+    '  ov.style.display = "flex";'
+    '  setTimeout(function(){ inp.focus(); }, 0);'
+    '}'
+    'function gbModalClose(){'
+    '  var ov = document.getElementById("gbModalOverlay");'
+    '  ov.style.display = "none";'
+    '  gbModalState.expectedId = null;'
+    '  gbModalState.href = null;'
+    '}'
+    'function gbModalConfirm(){'
+    '  var v = String(document.getElementById("gbModalInput").value || "").trim();'
+    '  if (v !== gbModalState.expectedId){'
+    '    document.getElementById("gbModalError").style.display = "block";'
+    '    return;'
+    '  }'
+    '  var href = gbModalState.href;'
+    '  gbModalClose();'
+    '  try { window.location.href = href; } catch(e) { /* noop */ }'
+    '}'
+    'function gbHumanConfirmReport(evt, expectedId, href){'
+    '  try { if (evt && evt.preventDefault) { evt.preventDefault(); } } catch(e) {}'
+    '  gbModalOpen(expectedId, href);'
+    '  return false;'
+    '}'
+    'try { document.getElementById("gbModalCheckbox").addEventListener("change", function(e){ try { document.getElementById("gbModalConfirmBtn").disabled = !this.checked; } catch(e){} }); } catch(e){}'
+    'document.addEventListener("keydown", function(e){'
+    '  var ov = document.getElementById("gbModalOverlay");'
+    '  if (!ov || ov.style.display !== "flex") { return; }'
+    '  if (e.key === "Escape") { gbModalClose(); }'
+    '  if (e.key === "Enter") { gbModalConfirm(); }'
+    '});'
+    'document.addEventListener("click", function(e){'
+    '  var ov = document.getElementById("gbModalOverlay");'
+    '  if (ov && ov.style.display === "flex" && e.target === ov) { gbModalClose(); }'
+    '});'
+    '</script>'
+  ))
   m.get_root().html.add_child(folium.Element('<div style="position: fixed; bottom: 0; left: 0; background: white; padding: 4px; z-index:9999">Markers: ' + str(count) + '</div>'))
 
   m.save(OUTPUT_HTML)
