@@ -5,11 +5,20 @@ from folium import plugins
 import json
 from urllib.parse import quote
 
+# Konfiguration zentral an einer Stelle
+CONFIG = {
+  'DB_PATH': 'brueter.sqlite',
+  'OUTPUT_HTML': 'GebaeudebrueterMultiMarkers.html',
+  'NABU_BASE_URL': 'http://www.gebaeudebrueter-in-berlin.de/index.php',
+  'EMAIL_RECIPIENT': 'detlefdev@gmail.com',
+  'ONLINE_FORM_URL': 'https://berlin.nabu.de/wir-ueber-uns/bezirksgruppen/steglitz-zehlendorf/projekte/gebaeudebrueter/12400.html',
+}
+
 # New multi-species marker map with segmented fill (species) and border/icon (status)
 # Output: GebaeudebrueterMultiMarkers.html
 
-DB_PATH = 'brueter.sqlite'
-OUTPUT_HTML = 'GebaeudebrueterMultiMarkers.html'
+DB_PATH = CONFIG['DB_PATH']
+OUTPUT_HTML = CONFIG['OUTPUT_HTML']
 
 # Species → color palette
 SPECIES_COLORS = {
@@ -321,7 +330,7 @@ controls_html = '''
             <p><strong>Kennen Sie einen Nistplatz von Spatz, Schwalbe &amp; Co?</strong></p>
             <p>Dann freuen wir uns über Ihre Meldung! Je mehr Daten wir haben, desto besser können wir die Gebäudebrüter in Berlin schützen.</p>
             <div style="margin-top:12px; display:flex; gap:8px;">
-              <a id="ms-submit-continue" href="https://berlin.nabu.de/wir-ueber-uns/bezirksgruppen/steglitz-zehlendorf/projekte/gebaeudebrueter/12400.html" target="_blank" rel="noopener" class="ms-submit-cta">Weiter zum Online-Formular</a>
+              <a id="ms-submit-continue" href="%ONLINE_FORM_URL%" target="_blank" rel="noopener" class="ms-submit-cta">Weiter zum Online-Formular</a>
               <button id="ms-submit-cancel" class="ms-submit-btn">Schließen</button>
             </div>
           </div>
@@ -664,9 +673,10 @@ controls_html = '''
       wireFilters();
       setTimeout(function(){ var selectedSpecies = Object.keys(SPECIES_COLORS_JS); var selectedStatus = Object.keys(STATUS_INFO_JS); rebuildCluster(selectedSpecies, selectedStatus); }, 250);
     })();
-    </script>
-    '''.replace('%SPECIES_COLORS_JSON%', json.dumps(SPECIES_COLORS, ensure_ascii=False))\
-       .replace('%STATUS_INFO_JSON%', json.dumps(STATUS_INFO, ensure_ascii=False))
+     </script>
+     '''.replace('%SPECIES_COLORS_JSON%', json.dumps(SPECIES_COLORS, ensure_ascii=False))\
+       .replace('%STATUS_INFO_JSON%', json.dumps(STATUS_INFO, ensure_ascii=False))\
+       .replace('%ONLINE_FORM_URL%', CONFIG['ONLINE_FORM_URL'])
 
 
 def pick_primary_status(row):
@@ -795,7 +805,7 @@ def main():
     cur.execute(fallback_query)
 
   rows = cur.fetchall()
-  url = 'http://www.gebaeudebrueter-in-berlin.de/index.php'
+  url = CONFIG['NABU_BASE_URL']
 
   count = 0
   for r in rows:
@@ -862,7 +872,7 @@ def main():
         "Viele Grüße,\n\n\n"
         "Hinweis zum Datenschutz: Der NABU erhebt und verarbeitet Ihre personenbezogenen Daten ausschließlich für Vereinszwecke. Dabei werden Ihre Daten - gegebenenfalls durch Beauftragte - auch für NABU-eigene Informationszwecke verarbeitet und genutzt. Eine Weitergabe an Dritte erfolgt niemals. Der Verwendung Ihrer Daten kann jederzeit schriftlich oder per E-Mail an lvberlin@nabu-berlin.de widersprochen werden.\n"
       )
-      mailto = f"mailto:detlefdev@gmail.com?subject={quote(subject, safe='')}&body={quote(body, safe='')}"
+      mailto = f"mailto:{CONFIG['EMAIL_RECIPIENT']}?subject={quote(subject, safe='')}&body={quote(body, safe='')}"
       popup_html += (
         f"<br/><br/><a href=\"{mailto}\" target=\"_blank\" rel=\"noreferrer\" onclick=\"return gbHumanConfirmReport(event, {web_id}, this.href);\" "
         f"style=\"display:inline-block;padding:6px 10px;border-radius:6px;border:1px solid #1976d2;"
