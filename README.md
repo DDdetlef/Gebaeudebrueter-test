@@ -28,7 +28,7 @@ Multi‑species markers (v2):
 - Run:
 
 ```bash
-C:/Users/2andr/Documents/VisualStudioCode_Projekte/Gebaeudebrueter-master/.venv/Scripts/python.exe scripts/generateMultiSpeciesMap.py
+scripts/generateMultiSpeciesMap.py
 ```
 
 Outputs `GebaeudebrueterMultiMarkers.html` (see Publishing below).
