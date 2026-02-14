@@ -1,5 +1,4 @@
 import sqlite3
-from datetime import datetime
 import folium
 from folium import plugins
 
@@ -54,29 +53,9 @@ for r in rows:
     except Exception:
         continue
 
-    # format Erstbeobachtung as DD.MM.YYYY (fallback: original string / "unbekannt")
-    raw_erst = r['erstbeobachtung']
-    if raw_erst:
-        s_erst = str(raw_erst)
-        try:
-            dt_erst = datetime.fromisoformat(s_erst)
-            erst_text = dt_erst.strftime('%d.%m.%Y')
-        except Exception:
-            try:
-                parts = s_erst.strip().split(' ')[0].split('-')
-                if len(parts) == 3:
-                    y, m, d = parts
-                    erst_text = f"{d.zfill(2)}.{m.zfill(2)}.{y}"
-                else:
-                    erst_text = s_erst
-            except Exception:
-                erst_text = s_erst
-    else:
-        erst_text = 'unbekannt'
-
     popup_html = (
         f"<b>Adresse</b><br/>{r['strasse']}, {r['plz']} {r['ort']}"
-        f"<br/><br/><b>Erstbeobachtung</b><br/>{erst_text}"
+        f"<br/><br/><b>Erstbeobachtung</b><br/>{(str(r['erstbeobachtung']) if r['erstbeobachtung'] else 'unbekannt')}"
         f"<br/><br/><b>Beschreibung</b><br/>{(r['beschreibung'] or '')}"
         f"<br/><br/><b>Link zur Datenbank</b><br/><a href={url}?ID={web_id}>{web_id}</a>"
     )
